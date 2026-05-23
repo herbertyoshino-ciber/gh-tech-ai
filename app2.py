@@ -242,6 +242,8 @@ with st.sidebar:
 st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v4.0</span></h1>", unsafe_allow_html=True)
 st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
+# O Python não entende o emoji solto no código
+
 📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
 col1, col2, col3, col4 = st.columns(4)
 with col1:
