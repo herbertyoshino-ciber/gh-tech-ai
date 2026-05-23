@@ -4,143 +4,44 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# CONFIGURAÇÃO DE PÁGINA BLINDADA
+# Configuração da página com a identidade corporativa
 st.set_page_config(
     page_title="HY Risk Intelligence | RI-AI",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" 
 )
 
-# Inicialize o cliente corretamente antes de usá-lo
-try:
-    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-except Exception as e:
-    st.error(f"Erro ao inicializar a API Key do Gemini: {e}. Verifique seus Secrets.")
-
-with st.sidebar:
-    st.title("🔵 HY RI-AI")
-    st.caption("Mapeamento estratégico e blindagem de ativos")
-    
-    st.write("---")
-    st.subheader("🌐 Escopo de Análise")
-    foco_problema = st.selectbox(
-        label="Selecione o foco do problema:",
-        options=["Geral / Sem Filtro", "Infraestrutura", "Aplicações Web", "Políticas de GRC"]
-    )
-    
-    st.write("---")
-    
-    st.subheader("📂 Analisador de Logs")
-    uploaded_file = st.file_uploader("Upload de arquivo de log", type=["txt", "log", "csv"], label_visibility="collapsed")
-    if uploaded_file:
-        st.success("Log carregado com sucesso!")
-        st.title("📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)")
-
-# Criação das 4 colunas de métricas superiores
-col1, col2, col3, col4 = st.columns(4)
-
-# Mude as linhas 46 até 61 para ficarem idênticas a isto:
-
-with col1:
-    st.metric(label="ANÁLISES EFETUADAS", value="0")
-    st.info("⬆️ SOC Ativo")
-
-with col2:
-    st.metric(label="CONTROLES DE GRC", value="NIST / ISO")
-    st.success("⬆️ Mapeados")
-
-with col3:
-    st.metric(label="STATUS DE CONFORMIDADE", value="98.4%", delta="+1.2% este mês")
-    st.success("⬆️ Foco Preventivo")
-
-with col4:
-    st.metric(label="NÍVEL DE RESILIÊNCIA", value="Alta")
-    st.success("⬆️ Seguro")
-
-
-st.write("---")
-st.write("Consulte vulnerabilidades, analise riscos de arquitetura e otimize suas defesas corporativas.")
-# Garante que as mensagens não sumam quando a página recarregar
-if "messages" not in st.session_state:
-    st.session_state.messages = []
-
-# Desenha na tela todas as mensagens salvas na memória
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
-        # CAIXA DE ENTRADA DO CHAT (BOTÃO INFERIOR)
-# ---------------------------------------------------------
-
-              # ---------------------------------------------------------
-# CAIXA DE ENTRADA DO CHAT (BOTÃO INFERIOR)
-# ---------------------------------------------------------
-if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
-    
-    # 1. Mostra imediatamente a pergunta do usuário na tela (4 espaços)
-    with st.chat_message("user"):
-        st.markdown(prompt) # (8 espaços)
-    
-    # 2. Salva a pergunta do usuário no histórico (4 espaços)
-    st.session_state.messages.append({"role": "user", "content": prompt})
-
-    # 3. Bloco de resposta do assistente (4 espaços)
-    with st.chat_message("assistant"):
-        message_placeholder = st.empty() # (8 espaços)
-        
-        # Garanta que o try e o except tenham exatamente 8 espaços de recuo:
-        try:
-            # Envia o prompt estruturado para o Gemini (12 espaços)
-            response = client.models.generate_content(
-                model="gemini-2.5-flash",
-                contents=f"Você é o especialista HY RI-AI focado em mapeamento estratégico e blindagem de ativos de segurança. Responda a seguinte dúvida técnica de forma direta: {prompt}"
-            )
-            
-            resposta_ia = response.text # (12 espaços)
-            
-            # Exibe o texto retornado no balão do assistente (12 espaços)
-            message_placeholder.markdown(resposta_ia)
-            
-            # 4. Salva a resposta do assistente no histórico (12 espaços)
-            st.session_state.messages.append({"role": "assistant", "content": resposta_ia})
-            
-        except Exception as e:
-            st.error(f"Erro ao processar resposta com a API Gemini: {e}") # (12 espaços)
-
-# Estilização CSS Premium para transformar a plataforma em uma interface executiva (Dark Theme Unificado)
+# Estilização CSS para garantir contraste perfeito no chat, na barra lateral e na caixa de entrada
 st.markdown("""
     <style>
-        /* 1. UNIFICAÇÃO DO FUNDO DO APLICATIVO (DARK MODE CORPORATIVO) */
-        .stApp {
-            background-color: #0d1117 !important;
-        }
-        
-        /* 2. CAIXAS DE MENSAGEM DO CHAT (ESTILO DASHBOARD PREMIUM) */
+        /* 1. CAIXAS DE MENSAGEM DO CHAT */
         .stChatMessage {
-            background-color: #161b22 !important; /* Cinza escuro integrado ao fundo */
-            border: 1px solid #21262d !important;  /* Borda sutil */
-            border-radius: 8px;
-            padding: 18px;
-            margin-bottom: 12px;
-            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
         }
         
-        /* Força as letras do chat (usuário e IA) a ficarem brancas e limpas sobre o fundo escuro */
+        /* CORREÇÃO DO CONTEXTO ENVIADO (MENSAGEM DO USUÁRIO) */
         [data-testid="stChatMessageUser"] p,
         [data-testid="stChatMessageUser"] div,
-        [data-testid="stChatMessageUser"] span,
+        [data-testid="stChatMessageUser"] span {
+            color: #161b22 !important; 
+            font-size: 16px !important;
+        }
+        
+        /* MENSAGEM DA IA (ASSISTENTE) */
         [data-testid="stChatMessageAssistant"] p,
         [data-testid="stChatMessageAssistant"] div,
         [data-testid="stChatMessageAssistant"] span {
-            color: #c9d1d9 !important; /* Branco acinzentado confortável para leitura */
-            font-size: 15px !important;
-            line-height: 1.6 !important;
+            color: #161b22 !important;
+            font-size: 16px !important;
         }
         
-        /* 3. PAINEL LATERAL (SIDEBAR) CONTÍNUO */
+        /* 2. PAINEL LATERAL (SIDEBAR) */
         [data-testid="stSidebar"] {
-            background-color: #070a0e !important; /* Levemente mais escuro que o fundo principal */
-            border-right: 1px solid #21262d !important;
+            background-color: #0d1117 !important;
+            border-right: 2px solid #00d2ff;
         }
         
         [data-testid="stSidebar"] p, 
@@ -150,105 +51,37 @@ st.markdown("""
         [data-testid="stSidebar"] h1,
         [data-testid="stSidebar"] h2,
         [data-testid="stSidebar"] h3 {
-            color: #f0f6fc !important;
+            color: #ffffff !important;
         }
         
         [data-testid="stSidebar"] .stMarkdown p {
-            color: #8b949e !important;
-            font-size: 13px !important;
-        }
-         /* Ajuste fino para os textos do selectbox na sidebar ficarem brancos */
-        [data-testid="stSidebar"] div[data-baseweb="select"] div {
-            color: #ffffff !important;
-        }
-                
-        /* 4. CENTRALIZAÇÃO E COR DOS TÍTULOS */
-        h1, h2, h3, .stSubheader, [data-testid="stHeader"] {
-            text-align: center !important;
-            justify-content: center !important;
-        }
-        
-        h1, h2, h3 {
-            color: #58a6ff !important; /* Azul ciano corporativo suave, menos agressivo aos olhos */
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-            font-weight: 600 !important;
-        }
-        
-        .stCaption {
-            text-align: center !important;
-            color: #8b949e !important;
+            color: #f8f9fa !important;
             font-size: 14px !important;
         }
         
-        /* 5. DESIGN DOS CARDS DE MÉTRICAS (KPIs) */
-        [data-testid="stMetricValue"] {
-            color: #58a6ff !important;
-            font-size: 28px !important;
-            font-weight: bold !important;
-            text-align: center !important;
-        }
-        [data-testid="stMetricLabel"] {
-            color: #8b949e !important;
-            font-size: 12px !important;
-            text-transform: uppercase !important;
-            letter-spacing: 1px !important;
-            text-align: center !important;
-        }
-        [data-testid="stMetricDelta"] {
-            justify-content: center !important;
+        /* 3. TÍTULOS DO SISTEMA */
+        h1, h2, h3 {
+            color: #00d2ff !important;
+            font-family: 'Courier New', Courier, monospace;
         }
         
-        /* Botões laterais modernos */
         .stButton>button {
             width: 100%;
-            background-color: #21262d !important;
-            color: #c9d1d9 !important;
-            border: 1px solid #30363d !important;
-            border-radius: 6px;
-        }
-        .stButton>button:hover {
-            border-color: #58a6ff !important;
-            color: #58a6ff !important;
         }
 
-        /* 6. BARRA DE MENSAGENS MINIMALISTA FLUTUANTE */
-        [data-testid="stChatInput"] {
-            background-color: transparent !important;
-            box-shadow: none !important;
-            padding: 5px 0px !important;
-        }
-        
+        /* 4. CAIXA DE PERGUNTA SEM TARJA */
         [data-testid="stChatInput"] textarea {
-            color: #f0f6fc !important;
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
-            border-radius: 6px !important;
-        }
-        [data-testid="stChatInput"] textarea:focus {
-            border-color: #58a6ff !important;
+            color: #161b22 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #d3d3d3 !important;
+            box-shadow: none !important;
         }
         
         [data-testid="stChatInput"] textarea::placeholder {
-            color: #484f58 !important;
-        }
-        
-        [data-testid="stChatInput"] button {
-            background-color: transparent !important;
-            color: #58a6ff !important;
-        }
-         /* Ajuste do uploader para ficar mais discreto e compacto */
-        .stFileUploader section {
-            padding: 0.5rem 1rem !important;
-            background-color: #161b22 !important;
-            border: 1px dashed #30363d !important;
-            border-radius: 6px !important;
-        }
-        .stFileUploader label {
-            display: none !important; /* Esconde o título gigante do uploader */
+            color: #6e7681 !important;
         }
     </style>
 """, unsafe_allow_html=True)
-
 
 # Prompt Base do Sistema - Foco em Risk Intelligence e Governança
 BASE_PROMPT = """
@@ -291,7 +124,13 @@ def gerar_relatorio_estrategico(historico):
 
 # CARREGAMENTO SILENCIOSO DA CHAVE (SECRETS)
 gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
-  
+
+# Painel Lateral (Sidebar) - Versão Limpa sem área de login/chave
+with st.sidebar:
+    st.markdown("<h1 style='text-align: center; color: #00d2ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
+    st.markdown("---")
+    
     # Filtro expandido com categorias de segurança e governança corporativa
     st.markdown("### 🔍 Escopo de Análise")
     categoria = st.selectbox(
@@ -311,8 +150,17 @@ gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
     
     st.markdown("---")
 
-   
-    # Renderizador do Botão de Exportar PDF
+    # Upload de logs
+    st.markdown("### 📁 Analisador de Logs")
+    arquivo_log = st.file_uploader(
+        "Envie um arquivo de log (.txt ou .log):", 
+        type=["txt", "log"],
+        help="O conteúdo será adicionado como contexto para a IA."
+    )
+    
+    st.markdown("---")
+    
+    # Renderizador estável do Botão de Exportar PDF
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
@@ -334,10 +182,7 @@ gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
 st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v4.0</span></h1>", unsafe_allow_html=True)
 st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
-# O Python não entende o emoji solto no código
-
-st.title("📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)")
-
+# 📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric(label="Análises Efetuadas", value=len([m for m in st.session_state.messages if m["role"] == "user"]), delta="SOC Ativo")
@@ -349,6 +194,7 @@ with col4:
     st.metric(label="Nível de Resiliência", value="Alta", delta="Foco Preventivo")
 
 st.markdown("---")
+
 # Exibe aviso de contexto ativo
 if arquivo_log:
     st.success(f"📎 Arquivo **{arquivo_log.name}** carregado com sucesso como contexto.")
@@ -363,6 +209,18 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 client = None
+
+# Inicialização do cliente Google GenAI utilizando a chave secreta de fundo
+if gemini_api_key:
+    try:
+        client = genai.Client(api_key=gemini_api_key)
+    except Exception as e:
+        st.error(f"Falha técnica na inicialização da chave secreta: {e}")
+        st.stop()
+else:
+    st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud. Verifique as configurações do painel da nuvem.")
+    st.stop()
+
 # Fluxo principal do chat
 if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
     # Anexa logs se houver
@@ -376,14 +234,15 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
     
     with st.chat_message("user"):
         st.markdown(prompt)
-
- # Histórico estruturado
+        
+    # Histórico estruturado
     history_contents = []
     for msg in st.session_state.messages[:-1]:
         role_mapping = "model" if msg["role"] == "assistant" else "user"
         history_contents.append(
             types.Content(
                 role=role_mapping,
+
                 parts=[types.Part.from_text(text=msg["content"])]
             )
         )
@@ -393,12 +252,40 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
             parts=[types.Part.from_text(text=prompt_completo)]
         )
     )
-# Rodapé da página
+        
+    with st.chat_message("assistant"):
+        with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
+            try:
+                contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
+                prompt_final = BASE_PROMPT + contexto_categoria
+                
+                config = types.GenerateContentConfig(
+                    system_instruction=prompt_final,
+                    temperature=0.4,
+                    max_output_tokens=2048
+                )
+                
+                response = client.models.generate_content(
+                    model='gemini-2.5-flash',
+                    contents=history_contents,
+                    config=config
+                )
+                
+                ai_resposta = response.text
+                st.markdown(ai_resposta)
+                
+                st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Erro na comunicação com o core da IA: {e}")
+
+# Rodapé
 st.markdown(
     """
     <div style="text-align: center; color: #8b949e; font-size: 12px;">
         <hr style="border-color: #21262d;">
-        <p>🔒 HY Risk Intelligence (HY RI-AI) — Mapeamento estratégico e blindagem de ativos. Todos os direitos reservados.</p>
+        <p>🔒 HY Risk Intelligence (HY RI-AI) — Segurança de forma estratégica. Todos os direitos reservados.</p>
     </div>
     """,
     unsafe_allow_html=True
