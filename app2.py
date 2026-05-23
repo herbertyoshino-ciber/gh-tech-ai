@@ -40,6 +40,8 @@ with st.sidebar:
 # Criação das 4 colunas de métricas superiores
 col1, col2, col3, col4 = st.columns(4)
 
+# Mude as linhas 46 até 61 para ficarem idênticas a isto:
+
 with col1:
     st.metric(label="ANÁLISES EFETUADAS", value="0")
     st.info("⬆️ SOC Ativo")
@@ -47,13 +49,15 @@ with col1:
 with col2:
     st.metric(label="CONTROLES DE GRC", value="NIST / ISO")
     st.success("⬆️ Mapeados")
-    with col3:
+
+with col3:
     st.metric(label="STATUS DE CONFORMIDADE", value="98.4%", delta="+1.2% este mês")
     st.success("⬆️ Foco Preventivo")
 
 with col4:
     st.metric(label="NÍVEL DE RESILIÊNCIA", value="Alta")
     st.success("⬆️ Seguro")
+
 
 st.write("---")
 st.write("Consulte vulnerabilidades, analise riscos de arquitetura e otimize suas defesas corporativas.")
