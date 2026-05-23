@@ -237,7 +237,9 @@ elif st.session_state.messages:
 
 # Fluxo principal do chat
 
-# Fluxo principal do chat
+   
+              
+        # Fluxo principal do chat
 if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
     if not client:
         st.warning("⚠️ Operação bloqueada. Insira sua API Key na barra lateral para liberar o terminal.")
@@ -250,14 +252,12 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
     else:
         prompt_completo = prompt
 
-    # Salva a pergunta do usuário no histórico
+    # 1. Adiciona a pergunta do usuário e exibe na tela
     st.session_state.messages.append({"role": "user", "content": prompt})
-    
-    # Exibe imediatamente a mensagem na tela
     with st.chat_message("user"):
         st.markdown(prompt)
         
-    # Monta o histórico estruturado para a nova API do Gemini
+    # 2. Monta o histórico estruturado para a API do Gemini
     history_contents = []
     for msg in st.session_state.messages[:-1]:
         role_mapping = "model" if msg["role"] == "assistant" else "user"
@@ -274,7 +274,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
         )
     )
         
-    # Gera a resposta do assistente
+    # 3. Gera e exibe a resposta do assistente (IA)
     with st.chat_message("assistant"):
         with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
             try:
@@ -283,8 +283,8 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                 
                 config = types.GenerateContentConfig(
                     system_instruction=prompt_final,
-                    temperature=0.4,
-                    max_output_tokens=2048
+                    temperature=0.3,
+                    max_output_tokens=4096 
                 )
                 
                 response = client.models.generate_content(
@@ -296,11 +296,11 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                 ai_resposta = response.text
                 st.markdown(ai_resposta)
                 
-                # Salva a resposta da IA no histórico
+                # 4. Salva a resposta da IA no histórico
                 st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
                 
-                # CORREÇÃO: Força a atualização correta da página para renderizar o botão de PDF imediatamente
-                st.fragment(st.rerun())
+                # 🚨 CORREÇÃO CRUCIAL: Removido o st.rerun() daqui para impedir que o Streamlit
+                # corte a renderização do texto pela metade.
                 
             except Exception as e:
                 st.error(f"Erro na comunicação com o core da IA: {e}")
@@ -315,5 +315,4 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 
