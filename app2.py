@@ -15,7 +15,7 @@ st.set_page_config(
 
 # Estilização CSS para garantir contraste e letras super nítidas
 
-    # Estilização CSS para garantir contraste e letras super nítidas em todo o app
+ # Estilização CSS para garantir contraste perfeito no chat e na barra lateral
 st.markdown("""
     <style>
         /* 1. CAIXAS DE MENSAGEM DO CHAT */
@@ -23,6 +23,24 @@ st.markdown("""
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
+        }
+        
+        /* CORREÇÃO DO CONTEXTO ENVIADO (MENSAGEM DO USUÁRIO) */
+        /* Força as letras dentro da caixinha clara do usuário a ficarem escuras para dar leitura */
+        [data-testid="stChatMessageUser"] p,
+        [data-testid="stChatMessageUser"] div,
+        [data-testid="stChatMessageUser"] span {
+            color: #161b22 !important; 
+            font-size: 16px !important;
+        }
+        
+        /* MENSAGEM DA IA (ASSISTENTE) */
+        /* Mantém as letras da IA claras, pois o fundo da resposta dela é escuro */
+        [data-testid="stChatMessageAssistant"] p,
+        [data-testid="stChatMessageAssistant"] div,
+        [data-testid="stChatMessageAssistant"] span {
+            color: #ffffff !important;
+            font-size: 16px !important;
         }
         
         /* 2. PAINEL LATERAL (SIDEBAR) */
@@ -48,13 +66,7 @@ st.markdown("""
             font-size: 14px !important;
         }
         
-        /* 3. CORPO PRINCIPAL (TEXTOS DO CHAT) */
-        .stMarkdown p, .stChatMessage p {
-            color: #ffffff !important; 
-            font-size: 16px !important;
-        }
-        
-        /* 4. TÍTULOS DO SISTEMA */
+        /* 3. TÍTULOS DO SISTEMA */
         h1, h2, h3 {
             color: #00d2ff !important; /* Títulos em Azul Ciano brilhante */
             font-family: 'Courier New', Courier, monospace;
@@ -65,7 +77,7 @@ st.markdown("""
             width: 100%;
         }
 
-        /* 5. CORREÇÃO DA CAIXA DE PERGUNTA (INPUT DO CHAT) */
+        /* 4. CAIXA DE PERGUNTA (INPUT DO CHAT) */
         /* Força o fundo da caixa de texto a ser escuro e a letra a ser branca e visível */
         [data-testid="stChatInput"] textarea {
             color: #ffffff !important;
@@ -79,6 +91,8 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
+
 
 
 
