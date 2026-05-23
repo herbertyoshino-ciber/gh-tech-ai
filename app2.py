@@ -71,36 +71,42 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
         # CAIXA DE ENTRADA DO CHAT (BOTÃO INFERIOR)
 # ---------------------------------------------------------
+
+              # ---------------------------------------------------------
+# CAIXA DE ENTRADA DO CHAT (BOTÃO INFERIOR)
+# ---------------------------------------------------------
 if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
     
-    # 1. Mostra imediatamente a pergunta do usuário na tela
+    # 1. Mostra imediatamente a pergunta do usuário na tela (4 espaços)
     with st.chat_message("user"):
-        st.markdown(prompt)
+        st.markdown(prompt) # (8 espaços)
     
-    # 2. Salva a pergunta do usuário no histórico
+    # 2. Salva a pergunta do usuário no histórico (4 espaços)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # 3. Bloco de resposta do assistente (IA)
+    # 3. Bloco de resposta do assistente (4 espaços)
     with st.chat_message("assistant"):
-         message_placeholder = st.empty()
+        message_placeholder = st.empty() # (8 espaços)
         
+        # Garanta que o try e o except tenham exatamente 8 espaços de recuo:
         try:
-            # Envia o prompt estruturado com contexto de segurança para o Gemini
+            # Envia o prompt estruturado para o Gemini (12 espaços)
             response = client.models.generate_content(
                 model="gemini-2.5-flash",
                 contents=f"Você é o especialista HY RI-AI focado em mapeamento estratégico e blindagem de ativos de segurança. Responda a seguinte dúvida técnica de forma direta: {prompt}"
             )
             
-            resposta_ia = response.text
-             # Exibe o texto retornado no balão do assistente
+            resposta_ia = response.text # (12 espaços)
+            
+            # Exibe o texto retornado no balão do assistente (12 espaços)
             message_placeholder.markdown(resposta_ia)
             
-            # 4. Salva a resposta do assistente no histórico
+            # 4. Salva a resposta do assistente no histórico (12 espaços)
             st.session_state.messages.append({"role": "assistant", "content": resposta_ia})
             
         except Exception as e:
-            st.error(f"Erro ao processar resposta com a API Gemini: {e}")
-            
+            st.error(f"Erro ao processar resposta com a API Gemini: {e}") # (12 espaços)
+
 # Estilização CSS Premium para transformar a plataforma em uma interface executiva (Dark Theme Unificado)
 st.markdown("""
     <style>
