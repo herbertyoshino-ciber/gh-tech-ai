@@ -242,3 +242,50 @@ with st.sidebar:
 st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v4.0</span></h1>", unsafe_allow_html=True)
 st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
+📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.metric(label="Análises Efetuadas", value=len([m for m in st.session_state.messages if m["role"] == "user"]), delta="SOC Ativo")
+with col2:
+    st.metric(label="Controles de GRC", value="NIST / ISO", delta="Mapeados")
+with col3:
+    st.metric(label="Status de Conformidade", value="98.4%", delta="+1.2% este mês")
+with col4:
+    st.metric(label="Nível de Resiliência", value="Alta", delta="Foco Preventivo")
+
+st.markdown("---")
+# Exibe aviso de contexto ativo
+if arquivo_log:
+    st.success(f"📎 Arquivo **{arquivo_log.name}** carregado com sucesso como contexto.")
+elif categoria != "Geral / Sem Filtro":
+    st.caption(f"Filtro ativo: **{categoria}**")
+else:
+    st.caption("Consulte vulnerabilidades, analise riscos de arquitetura e otimize suas defesas corporativas.")
+
+# Exibe mensagens anteriores cadastradas no histórico
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+client = None
+# Fluxo principal do chat
+if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
+    # Anexa logs se houver
+    if arquivo_log:
+        conteudo_log = arquivo_log.read().decode("utf-8")
+        prompt_completo = f"CONTEXTO DO LOG ENVIADO:\n```\n{conteudo_log}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
+    else:
+        prompt_completo = prompt
+
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+ # Histórico estruturado
+    history_contents = []
+    for msg in st.session_state.messages[:-1]:
+        role_mapping = "model" if msg["role"] == "assistant" else "user"
+        history_contents.append(
+            types.Content(
+                role=role_mapping,
