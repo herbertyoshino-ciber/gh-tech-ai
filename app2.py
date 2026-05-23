@@ -296,3 +296,13 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
     ]  # <--- Fecha o colchete de contents
 )  # <--- Fecha o client.models.generate_content
 
+# Rodapé da página
+st.markdown(
+    """
+    <div style="text-align: center; color: #8b949e; font-size: 12px;">
+        <hr style="border-color: #21262d;">
+        <p>🔒 HY Risk Intelligence (HY RI-AI) — Mapeamento estratégico e blindagem de ativos. Todos os direitos reservados.</p>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
