@@ -13,43 +13,40 @@ st.set_page_config(
 
 )
 
-# Estilização CSS para garantir contraste e letras super nítidas
-
-    # Estilização CSS para garantir contraste perfeito no chat, na barra lateral e na caixa de entrada
+# Estilização CSS para caixas de mensagem com interior totalmente branco
 st.markdown("""
     <style>
-        /* 1. CAIXAS DE MENSAGEM DO CHAT */
+        /* 1. CONFIGURAÇÃO GERAL DAS CAIXAS DE MENSAGEM (USUÁRIO E IA) */
         .stChatMessage {
+            background-color: #ffffff !important; /* Interior todo branco */
+            border: 1px solid #d3d3d3 !important;  /* Borda cinza clara para dar acabamento */
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
         }
         
-        /* CORREÇÃO DO CONTEXTO ENVIADO (MENSAGEM DO USUÁRIO) */
-        /* Força as letras dentro da caixinha clara do usuário a ficarem escuras para dar leitura */
+        /* COR DAS LETRAS DENTRO DO CHAT (USUÁRIO) */
         [data-testid="stChatMessageUser"] p,
         [data-testid="stChatMessageUser"] div,
         [data-testid="stChatMessageUser"] span {
-            color: #161b22 !important; 
+            color: #161b22 !important; /* Letras escuras para contraste no fundo branco */
             font-size: 16px !important;
         }
         
-        /* MENSAGEM DA IA (ASSISTENTE) */
-        /* Garante que o texto da IA fique legível no fundo padrão */
+        /* COR DAS LETRAS DENTRO DO CHAT (IA / ASSISTENTE) */
         [data-testid="stChatMessageAssistant"] p,
         [data-testid="stChatMessageAssistant"] div,
         [data-testid="stChatMessageAssistant"] span {
-            color: #161b22 !important;
+            color: #161b22 !important; /* Letras também escuras para o fundo branco */
             font-size: 16px !important;
         }
         
-        /* 2. PAINEL LATERAL (SIDEBAR) - MANTIDO ESCURO E NITIDO */
+        /* 2. PAINEL LATERAL (SIDEBAR) - MANTIDO ESCURO PARA IDENTIDADE VISUAL */
         [data-testid="stSidebar"] {
-            background-color: #0d1117 !important; /* Fundo grafite escuro */
-            border-right: 2px solid #00d2ff;       /* Linha vertical azul ciano */
+            background-color: #0d1117 !important;
+            border-right: 2px solid #00d2ff;
         }
         
-        /* Força todas as letras da Sidebar a ficarem brancas e visíveis */
         [data-testid="stSidebar"] p, 
         [data-testid="stSidebar"] label, 
         [data-testid="stSidebar"] span, 
@@ -60,7 +57,6 @@ st.markdown("""
             color: #ffffff !important;
         }
         
-        /* Ajuste fino de alto contraste para textos menores na barra lateral */
         [data-testid="stSidebar"] .stMarkdown p {
             color: #f8f9fa !important;
             font-size: 14px !important;
@@ -68,17 +64,15 @@ st.markdown("""
         
         /* 3. TÍTULOS DO SISTEMA */
         h1, h2, h3 {
-            color: #00d2ff !important; /* Títulos em Azul Ciano brilhante */
+            color: #00d2ff !important;
             font-family: 'Courier New', Courier, monospace;
         }
         
-        /* Botões laterais ocupando toda a largura útil */
         .stButton>button {
             width: 100%;
         }
 
-        /* 4. REMOÇÃO DA TARJA PRETA NA CAIXA DE PERGUNTA */
-        /* Remove a cor de fundo preta, restaura o padrão claro e coloca o texto escuro */
+        /* 4. CAIXA DE PERGUNTA (INPUT) TAMBÉM INTEGRADA EM BRANCO */
         [data-testid="stChatInput"] textarea {
             color: #161b22 !important;
             background-color: #ffffff !important;
@@ -86,12 +80,12 @@ st.markdown("""
             box-shadow: none !important;
         }
         
-        /* Ajusta o texto temporário (Placeholder) para um tom cinza legível no fundo branco */
         [data-testid="stChatInput"] textarea::placeholder {
             color: #6e7681 !important;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
