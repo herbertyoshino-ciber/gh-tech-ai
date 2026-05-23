@@ -4,6 +4,10 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
+# Inicialize o cliente corretamente antes de usá-lo
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+
+
 # CONFIGURAÇÃO DE PÁGINA BLINDADA
 st.set_page_config(
     page_title="HY Risk Intelligence | RI-AI",
