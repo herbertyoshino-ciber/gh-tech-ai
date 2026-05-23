@@ -229,26 +229,30 @@ elif st.session_state.messages:
     st.warning("⚠️ Autenticação necessária. Insira sua API Key do Gemini no painel lateral para interagir.")
 
 # Fluxo principal do chat
+
+# Fluxo principal do chat
 if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
     if not client:
         st.warning("⚠️ Operação bloqueada. Insira sua API Key na barra lateral para liberar o terminal.")
         st.stop()
         
-    # Se houver um arquivo de log, lê e anexa o conteúdo à pergunta do usuário
+    # Anexa logs se houver
     if arquivo_log:
         conteudo_log = arquivo_log.read().decode("utf-8")
         prompt_completo = f"CONTEXTO DO LOG ENVIADO:\n```\n{conteudo_log}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
     else:
         prompt_completo = prompt
 
+    # Salva a pergunta do usuário no histórico
     st.session_state.messages.append({"role": "user", "content": prompt})
     
+    # Exibe imediatamente a mensagem na tela
     with st.chat_message("user"):
         st.markdown(prompt)
         
-    # Monta o histórico estruturado exigido pela biblioteca google-genai
+    # Monta o histórico estruturado para a nova API do Gemini
     history_contents = []
-    for msg in st.session_state.messages[:-1]: # Adiciona o histórico antigo normal
+    for msg in st.session_state.messages[:-1]:
         role_mapping = "model" if msg["role"] == "assistant" else "user"
         history_contents.append(
             types.Content(
@@ -256,7 +260,6 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                 parts=[types.Part.from_text(text=msg["content"])]
             )
         )
-    # Adiciona a última mensagem contendo o log expandido se houver
     history_contents.append(
         types.Content(
             role="user",
@@ -264,11 +267,11 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
         )
     )
         
+    # Gera a resposta do assistente
     with st.chat_message("assistant"):
-        with st.spinner("🕵️‍♂️ Avaliando riscos e gerando resposta estratégica..."):
+        with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
             try:
-                # Modifica o prompt do sistema dinamicamente baseado na categoria escolhida
-                contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo corporativo."
+                contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
                 prompt_final = BASE_PROMPT + contexto_categoria
                 
                 config = types.GenerateContentConfig(
@@ -277,7 +280,6 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     max_output_tokens=2048
                 )
                 
-                # Dispara a requisição para o modelo oficial do Gemini
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=history_contents,
@@ -287,13 +289,16 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                 ai_resposta = response.text
                 st.markdown(ai_resposta)
                 
+                # Salva a resposta da IA no histórico
                 st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
-                st.rerun()
+                
+                # CORREÇÃO: Força a atualização correta da página para renderizar o botão de PDF imediatamente
+                st.fragment(st.rerun())
                 
             except Exception as e:
                 st.error(f"Erro na comunicação com o core da IA: {e}")
 
-# Rodapé
+# Rodapé da página
 st.markdown(
     """
     <div style="text-align: center; color: #8b949e; font-size: 12px;">
@@ -303,4 +308,5 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 
