@@ -4,10 +4,6 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# Inicialize o cliente corretamente antes de usá-lo
-client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
-
-
 # CONFIGURAÇÃO DE PÁGINA BLINDADA
 st.set_page_config(
     page_title="HY Risk Intelligence | RI-AI",
@@ -16,8 +12,90 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ESTILIZAÇÃO CSS PREMIUM ADAPTADA E BLINDADA (DARK MODE)
+# Inicialize o cliente corretamente antes de usá-lo
+client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+except Exception as e:
+    st.error(f"Erro ao inicializar a API Key do Gemini: {e}. Verifique seus Secrets.")
 
+with st.sidebar:
+    st.title("🔵 HY RI-AI")
+    st.caption("Mapeamento estratégico e blindagem de ativos")
+    
+    st.write("---")
+    st.subheader("🌐 Escopo de Análise")
+    foco_problema = st.selectbox(
+        label="Selecione o foco do problema:",
+        options=["Geral / Sem Filtro", "Infraestrutura", "Aplicações Web", "Políticas de GRC"]
+    )
+    
+    st.write("---")
+    
+    st.subheader("📂 Analisador de Logs")
+    uploaded_file = st.file_uploader("Upload de arquivo de log", type=["txt", "log", "csv"], label_visibility="collapsed")
+    if uploaded_file:
+        st.success("Log carregado com sucesso!")
+        st.title("📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)")
+
+# Criação das 4 colunas de métricas superiores
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric(label="ANÁLISES EFETUADAS", value="0")
+    st.info("⬆️ SOC Ativo")
+
+with col2:
+    st.metric(label="CONTROLES DE GRC", value="NIST / ISO")
+    st.success("⬆️ Mapeados")
+    with col3:
+    st.metric(label="STATUS DE CONFORMIDADE", value="98.4%", delta="+1.2% este mês")
+    st.success("⬆️ Foco Preventivo")
+
+with col4:
+    st.metric(label="NÍVEL DE RESILIÊNCIA", value="Alta")
+    st.success("⬆️ Seguro")
+
+st.write("---")
+st.write("Consulte vulnerabilidades, analise riscos de arquitetura e otimize suas defesas corporativas.")
+# Garante que as mensagens não sumam quando a página recarregar
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+# Desenha na tela todas as mensagens salvas na memória
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+        # CAIXA DE ENTRADA DO CHAT (BOTÃO INFERIOR)
+# ---------------------------------------------------------
+if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
+    
+    # 1. Mostra imediatamente a pergunta do usuário na tela
+    with st.chat_message("user"):
+        st.markdown(prompt)
+    
+    # 2. Salva a pergunta do usuário no histórico
+    st.session_state.messages.append({"role": "user", "content": prompt})
+
+    # 3. Bloco de resposta do assistente (IA)
+    with st.chat_message("assistant"):
+         message_placeholder = st.empty()
+        
+        try:
+            # Envia o prompt estruturado com contexto de segurança para o Gemini
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=f"Você é o especialista HY RI-AI focado em mapeamento estratégico e blindagem de ativos de segurança. Responda a seguinte dúvida técnica de forma direta: {prompt}"
+            )
+            
+            resposta_ia = response.text
+             # Exibe o texto retornado no balão do assistente
+            message_placeholder.markdown(resposta_ia)
+            
+            # 4. Salva a resposta do assistente no histórico
+            st.session_state.messages.append({"role": "assistant", "content": resposta_ia})
+            
+        except Exception as e:
+            st.error(f"Erro ao processar resposta com a API Gemini: {e}")
+            
 # Estilização CSS Premium para transformar a plataforma em uma interface executiva (Dark Theme Unificado)
 st.markdown("""
     <style>
@@ -202,13 +280,7 @@ def gerar_relatorio_estrategico(historico):
 
 # CARREGAMENTO SILENCIOSO DA CHAVE (SECRETS)
 gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
-
-# Painel Lateral (Sidebar)
-with st.sidebar:
-    st.markdown("<h1 style='text-align: center; color: #58a6ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    
+  
     # Filtro expandido com categorias de segurança e governança corporativa
     st.markdown("### 🔍 Escopo de Análise")
     categoria = st.selectbox(
@@ -228,16 +300,7 @@ with st.sidebar:
     
     st.markdown("---")
 
-    # Upload de logs
-    st.markdown("### 📁 Analisador de Logs")
-    arquivo_log = st.file_uploader(
-        "Envie um arquivo de log (.txt ou .log):", 
-        type=["txt", "log"],
-        help="O conteúdo será adicionado como contexto para a IA."
-    )
-    
-    st.markdown("---")
-    
+   
     # Renderizador do Botão de Exportar PDF
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
