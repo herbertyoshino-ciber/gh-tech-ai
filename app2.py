@@ -14,13 +14,27 @@ st.set_page_config(
 )
 # Estilização CSS para centralização de títulos, contraste e barra de mensagem minimalista
 
- # Estilização CSS Premium Unificada com Forçador de Modo Escuro Absoluto
+    import os
+import io
+import streamlit as st
+from google import genai
+from google.genai import types
+
+# CONFIGURAÇÃO DE PÁGINA BLINDADA
+# O parâmetro adicionado força o Streamlit a injetar a base escura direto na raiz
+st.set_page_config(
+    page_title="HY Risk Intelligence | RI-AI",
+    page_icon="🛡️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# ESTILIZAÇÃO CSS PREMIUM ADAPTADA E BLINDADA
 st.markdown("""
     <style>
-        /* FORÇADOR DE MODO ESCURO ABSOLUTO - PINTA A TELA TODA DE PRETO */
-        .stApp, html, body, [data-testid="stAppViewContainer"] {
+        /* FORÇADOR GLOBAL DE FUNDO ESCURO CORPORATIVO */
+        .stApp, html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             background-color: #0d1117 !important;
-            color: #c9d1d9 !important;
         }
         
         /* 1. CAIXAS DE MENSAGEM DO CHAT (DARK INTEGRADO) */
@@ -66,10 +80,9 @@ st.markdown("""
             font-size: 13px !important;
         }
 
-        /* Correção para o seletor da categoria na sidebar */
+        /* Ajuste fino para os textos do selectbox na sidebar ficarem brancos */
         [data-testid="stSidebar"] div[data-baseweb="select"] div {
             color: #ffffff !important;
-            background-color: #161b22 !important;
         }
         
         /* 3. CENTRALIZAÇÃO E COR DOS TÍTULOS */
@@ -148,6 +161,7 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
