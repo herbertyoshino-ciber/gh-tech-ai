@@ -64,7 +64,11 @@ st.markdown("""
             color: #8b949e !important;
             font-size: 13px !important;
         }
-        
+         /* Ajuste fino para os textos do selectbox na sidebar ficarem brancos */
+        [data-testid="stSidebar"] div[data-baseweb="select"] div {
+            color: #ffffff !important;
+        }
+                
         /* 4. CENTRALIZAÇÃO E COR DOS TÍTULOS */
         h1, h2, h3, .stSubheader, [data-testid="stHeader"] {
             text-align: center !important;
@@ -118,7 +122,7 @@ st.markdown("""
         [data-testid="stChatInput"] {
             background-color: transparent !important;
             box-shadow: none !important;
-            padding: 15px 0px !important;
+            padding: 5px 0px !important;
         }
         
         [data-testid="stChatInput"] textarea {
@@ -138,6 +142,16 @@ st.markdown("""
         [data-testid="stChatInput"] button {
             background-color: transparent !important;
             color: #58a6ff !important;
+        }
+         /* Ajuste do uploader para ficar mais discreto e compacto */
+        .stFileUploader section {
+            padding: 0.5rem 1rem !important;
+            background-color: #161b22 !important;
+            border: 1px dashed #30363d !important;
+            border-radius: 6px !important;
+        }
+        .stFileUploader label {
+            display: none !important; /* Esconde o título gigante do uploader */
         }
     </style>
 """, unsafe_allow_html=True)
