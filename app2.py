@@ -183,14 +183,20 @@ with st.sidebar:
     st.markdown("---")
     
     # GERADOR DE RELATÓRIO PDF (Só exibe se houver mensagens no chat)
+
+    # ... (código anterior da barra lateral)
+    st.markdown("---")
+    
+    # 🚨 ISSO FOI ADICIONADO/ALTERADO:
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
         st.download_button(
             label="📥 Baixar Relatório Estratégico (.pdf)",
             data=dados_pdf,
-            file_name="relatorio_gh_tech_ai.pdf",
-            mime="application/pdf"
+            file_name="relatorio_hy_risk_intelligence.pdf",
+            mime="application/pdf",
+            key="download_pdf_btn"  # <-- Esta chave garante a estabilidade do botão
         )
         st.markdown("---")
     
@@ -198,6 +204,7 @@ with st.sidebar:
     if st.button("🗑️ Limpar Histórico do Terminal", type="secondary"):
         st.session_state.messages = []
         st.rerun()
+
 
 # Título principal da interface
 st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v3.5</span></h1>", unsafe_allow_html=True)
