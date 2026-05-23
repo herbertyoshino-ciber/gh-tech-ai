@@ -244,7 +244,8 @@ st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
 # O Python não entende o emoji solto no código
 
-"📊" PAINEL DE INDICADORES EXECUTIVOS (KPIs)
+st.title("📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)")
+
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.metric(label="Análises Efetuadas", value=len([m for m in st.session_state.messages if m["role"] == "user"]), delta="SOC Ativo")
