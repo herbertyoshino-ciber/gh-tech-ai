@@ -14,6 +14,8 @@ st.set_page_config(
 )
 
 # Estilização CSS para garantir contraste e letras super nítidas
+
+    # Estilização CSS para garantir contraste e letras super nítidas em todo o app
 st.markdown("""
     <style>
         /* 1. CAIXAS DE MENSAGEM DO CHAT */
@@ -29,7 +31,7 @@ st.markdown("""
             border-right: 2px solid #00d2ff;       /* Linha vertical azul ciano */
         }
         
-        /* FORÇA TODAS AS LETRAS DA SIDEBAR A FICAREM BRANCAS E VISÍVEIS */
+        /* Força todas as letras da Sidebar a ficarem brancas e visíveis */
         [data-testid="stSidebar"] p, 
         [data-testid="stSidebar"] label, 
         [data-testid="stSidebar"] span, 
@@ -40,16 +42,15 @@ st.markdown("""
             color: #ffffff !important;
         }
         
-        /* Ajuste fino de alto contraste para textos menores ou explicativos na barra lateral */
+        /* Ajuste fino de alto contraste para textos menores na barra lateral */
         [data-testid="stSidebar"] .stMarkdown p {
-            color: #f8f9fa !important; /* Branco fosco de alta leitura */
+            color: #f8f9fa !important;
             font-size: 14px !important;
         }
         
         /* 3. CORPO PRINCIPAL (TEXTOS DO CHAT) */
-        /* Garante que o texto digitado por você e as respostas da IA tenham excelente leitura */
         .stMarkdown p, .stChatMessage p {
-            color: #ffffff !important; /* Altere para #000000 se o seu Streamlit estiver em modo claro por padrão */
+            color: #ffffff !important; 
             font-size: 16px !important;
         }
         
@@ -63,8 +64,22 @@ st.markdown("""
         .stButton>button {
             width: 100%;
         }
+
+        /* 5. CORREÇÃO DA CAIXA DE PERGUNTA (INPUT DO CHAT) */
+        /* Força o fundo da caixa de texto a ser escuro e a letra a ser branca e visível */
+        [data-testid="stChatInput"] textarea {
+            color: #ffffff !important;
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+        }
+        
+        /* Ajusta o texto temporário (Placeholder - "Digite sua dúvida...") */
+        [data-testid="stChatInput"] textarea::placeholder {
+            color: #8b949e !important;
+        }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 # Prompt Base do Sistema - Foco em Segurança de Forma Estratégica
