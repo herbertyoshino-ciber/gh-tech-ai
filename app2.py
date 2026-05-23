@@ -11,7 +11,16 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded" 
 )
-
+# 🛡️ FUNÇÃO DE HIGIENIZAÇÃO DE DADOS CONFIDENCIAIS (DATA MASKING)
+# Varre os logs e perguntas antes de enviar para a API, mascarando dados sensíveis automagicamente
+def higienizar_contexto(texto):
+    # Substitui endereços de IP por uma tag genérica
+    texto = re.sub(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', '[IP_REDACTED]', texto)
+    # Substitui e-mails estruturados
+    texto = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL_REDACTED]', texto)
+    # Substitui CPFs brasileiros
+    texto = re.sub(r'\b\d{3}\.\d{3}\.\d{3}-\d{2}\b', '[CPF_REDACTED]', texto)
+    return texto
 # Estilização CSS para garantir contraste perfeito no chat, na barra lateral e na caixa de entrada
 # Estilização CSS Premium para transformar a plataforma em uma interface executiva (Dark Theme Unificado)
 st.markdown("""
