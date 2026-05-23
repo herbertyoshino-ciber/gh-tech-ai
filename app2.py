@@ -4,39 +4,59 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-# Configuração da página com foco em Governança e Segurança Estratégica
+# Configuração da página com a nova identidade corporativa
 st.set_page_config(
-    page_title="GH Tech AI | Segurança Estratégica",
+    page_title="HY Risk Intelligence | RI-AI",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded" 
 )
 
-# Estilização CSS customizada para o design Corporativo/SecOps
+# Estilização CSS para garantir contraste e alta legibilidade das letras
 st.markdown("""
     <style>
+        /* Estilização das caixas de mensagem do chat */
         .stChatMessage {
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
         }
+        
+        /* Painel Lateral (Sidebar) - Fundo Escuro com Linha Azul */
         [data-testid="stSidebar"] {
-            background-color: #0d1117;
+            background-color: #0d1117 !important;
             border-right: 2px solid #00d2ff;
         }
+        
+        /* Força as letras da Sidebar a ficarem brancas e visíveis */
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] label, 
+        [data-testid="stSidebar"] span, 
+        [data-testid="stSidebar"] div {
+            color: #ffffff !important;
+        }
+        
+        /* Ajuste fino para os textos explicativos menores na barra lateral */
+        [data-testid="stSidebar"] .stMarkdown p {
+            color: #e0e0e0 !important;
+        }
+        
+        /* Estilização dos Títulos em Azul Ciano */
         h1, h2, h3 {
-            color: #00d2ff;
+            color: #00d2ff !important;
             font-family: 'Courier New', Courier, monospace;
         }
+        
+        /* Botões ocupando toda a largura lateral */
         .stButton>button {
             width: 100%;
         }
     </style>
 """, unsafe_allow_html=True)
 
-# Prompt Base do Sistema - Foco em Segurança de Forma Estratégica
+# Prompt Base do Sistema - Foco em Risk Intelligence e Governança
 BASE_PROMPT = """
-Você é o "GH Tech AI", um assistente de inteligência artificial especialista em Segurança da Informação atuando de forma estratégica. Sua missão é apoiar profissionais, gestores e analistas na tomada de decisões seguras, eficientes e alinhadas ao negócio.
+Você é o "HY RI-AI", um assistente de inteligência artificial especialista em Segurança da Informação atuando com foco em Risk Intelligence e Governança Estratégica. Sua missão é apoiar profissionais, gestores e analistas na tomada de decisões seguras, eficientes e alinhadas ao negócio.
 
 REGRAS DE OPERAÇÃO:
 1. **Abordagem Estratégica**: Responda sempre priorizando a mitigação de riscos, governança, conformidade, arquitetura segura e melhores práticas de cibersegurança.
@@ -56,18 +76,18 @@ if "messages" not in st.session_state:
 def gerar_relatorio_estrategico(historico):
     pdf_buffer = io.BytesIO()
     conteudo = "==================================================\n"
-    conteudo += "        GH TECH AI - RELATÓRIO ESTRATÉGICO        \n"
-    conteudo += "         Segurança de forma estratégica          \n"
+    conteudo += "       HY RISK INTELLIGENCE - REPORT (RI-AI)       \n"
+    conteudo += "    Mapeamento estratégico e blindagem de ativos  \n"
     conteudo += "==================================================\n\n"
     
     for idx, msg in enumerate(historico, 1):
-        autor = "USUÁRIO" if msg["role"] == "user" else "GH TECH AI"
+        autor = "USUÁRIO" if msg["role"] == "user" else "HY RI-AI"
         conteudo += f"[{idx}] {autor}:\n"
         conteudo += f"{msg['content']}\n"
         conteudo += "-" * 50 + "\n\n"
         
     conteudo += "==================================================\n"
-    conteudo += "Fim do relatório. GH Tech AI - Proteção e Negócio.\n"
+    conteudo += "Fim do relatório. HY Risk Intelligence - Proteção e Negócio.\n"
     
     pdf_buffer.write(conteudo.encode('utf-8'))
     pdf_buffer.seek(0)
@@ -75,8 +95,8 @@ def gerar_relatorio_estrategico(historico):
 
 # Painel Lateral (Sidebar)
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center;'>🛡️ GH Tech AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center; color: #8b949e;'>Segurança de forma estratégica</p>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #00d2ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
     st.markdown("---")
     
     # Campo para chave de API
@@ -107,7 +127,7 @@ with st.sidebar:
     
     st.markdown("---")
 
-    # NOVO: UPLOAD DE ARQUIVOS DE LOG
+    # Upload de logs
     st.markdown("### 📁 Analisador de Logs")
     arquivo_log = st.file_uploader(
         "Envie um arquivo de log (.txt ou .log):", 
@@ -117,14 +137,14 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # GERADOR DE RELATÓRIO PDF (Só exibe se houver mensagens no chat)
+    # Gerador de Relatório PDF (Só exibe se houver mensagens no chat)
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
         st.download_button(
             label="📥 Baixar Relatório Estratégico (.pdf)",
             data=dados_pdf,
-            file_name="relatorio_gh_tech_ai.pdf",
+            file_name="relatorio_hy_risk_intelligence.pdf",
             mime="application/pdf"
         )
         st.markdown("---")
@@ -135,8 +155,8 @@ with st.sidebar:
         st.rerun()
 
 # Título principal da interface
-st.markdown("<h1>🛡️ GH Tech AI <span style='font-size: 18px; color: #8b949e;'>v3.5</span></h1>", unsafe_allow_html=True)
-st.subheader("Segurança de forma estratégica 💻")
+st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v3.5</span></h1>", unsafe_allow_html=True)
+st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
 # Exibe aviso de contexto ativo
 if arquivo_log:
@@ -169,7 +189,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
         st.warning("⚠️ Operação bloqueada. Insira sua API Key na barra lateral para liberar o terminal.")
         st.stop()
         
-    # Se houver um arquivo de log, lê e anexa o conteúdo à pergunta do usuário
+    # Anexa logs se houver
     if arquivo_log:
         conteudo_log = arquivo_log.read().decode("utf-8")
         prompt_completo = f"CONTEXTO DO LOG ENVIADO:\n```\n{conteudo_log}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
@@ -181,9 +201,9 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
     with st.chat_message("user"):
         st.markdown(prompt)
         
-    # Monta o histórico estruturado exigido pela biblioteca google-genai
+    # Histórico estruturado
     history_contents = []
-    for msg in st.session_state.messages[:-1]: # Adiciona o histórico antigo normal
+    for msg in st.session_state.messages[:-1]:
         role_mapping = "model" if msg["role"] == "assistant" else "user"
         history_contents.append(
             types.Content(
@@ -191,7 +211,6 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                 parts=[types.Part.from_text(text=msg["content"])]
             )
         )
-    # Adiciona a última mensagem contendo o log expandido se houver
     history_contents.append(
         types.Content(
             role="user",
@@ -200,10 +219,9 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
     )
         
     with st.chat_message("assistant"):
-        with st.spinner("🕵️‍♂️ Avaliando riscos e gerando resposta estratégica..."):
+        with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
             try:
-                # Modifica o prompt do sistema dinamicamente baseado na categoria escolhida
-                contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo corporativo."
+                contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
                 prompt_final = BASE_PROMPT + contexto_categoria
                 
                 config = types.GenerateContentConfig(
@@ -212,7 +230,6 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     max_output_tokens=2048
                 )
                 
-                # Dispara a requisição para o modelo oficial do Gemini
                 response = client.models.generate_content(
                     model='gemini-2.5-flash',
                     contents=history_contents,
@@ -231,10 +248,3 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
 # Rodapé
 st.markdown(
     """
-    <div style="text-align: center; color: #8b949e; font-size: 12px;">
-        <hr style="border-color: #21262d;">
-        <p>🔒 GH Tech AI — Segurança de forma estratégica. Todos os direitos reservados.</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
