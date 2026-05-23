@@ -13,7 +13,8 @@ st.set_page_config(
 )
 
 # Inicialize o cliente corretamente antes de usá-lo
-client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
+try:
+    client = genai.Client(api_key=st.secrets["GEMINI_API_KEY"])
 except Exception as e:
     st.error(f"Erro ao inicializar a API Key do Gemini: {e}. Verifique seus Secrets.")
 
