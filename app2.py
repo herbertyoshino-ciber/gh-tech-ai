@@ -13,31 +13,41 @@ st.set_page_config(
 
 )
 # Estilização CSS para centralização de títulos, contraste e barra de mensagem minimalista
+
+    # Estilização CSS Premium para transformar a plataforma em uma interface executiva (Dark Theme Unificado)
 st.markdown("""
     <style>
-        /* 1. CAIXAS DE MENSAGEM DO CHAT (INTERIOR BRANCO) */
-        .stChatMessage {
-            background-color: #ffffff !important; 
-            border: 1px solid #d3d3d3 !important;  
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
+        /* 1. UNIFICAÇÃO DO FUNDO DO APLICATIVO (DARK MODE CORPORATIVO) */
+        .stApp {
+            background-color: #0d1117 !important;
         }
         
+        /* 2. CAIXAS DE MENSAGEM DO CHAT (ESTILO DASHBOARD PREMIUM) */
+        .stChatMessage {
+            background-color: #161b22 !important; /* Cinza escuro integrado ao fundo */
+            border: 1px solid #21262d !important;  /* Borda sutil */
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        /* Força as letras do chat (usuário e IA) a ficarem brancas e limpas sobre o fundo escuro */
         [data-testid="stChatMessageUser"] p,
         [data-testid="stChatMessageUser"] div,
         [data-testid="stChatMessageUser"] span,
         [data-testid="stChatMessageAssistant"] p,
         [data-testid="stChatMessageAssistant"] div,
         [data-testid="stChatMessageAssistant"] span {
-            color: #161b22 !important; 
-            font-size: 16px !important;
+            color: #c9d1d9 !important; /* Branco acinzentado confortável para leitura */
+            font-size: 15px !important;
+            line-height: 1.6 !important;
         }
         
-        /* 2. PAINEL LATERAL (SIDEBAR) */
+        /* 3. PAINEL LATERAL (SIDEBAR) CONTÍNUO */
         [data-testid="stSidebar"] {
-            background-color: #0d1117 !important;
-            border-right: 2px solid #00d2ff;
+            background-color: #070a0e !important; /* Levemente mais escuro que o fundo principal */
+            border-right: 1px solid #21262d !important;
         }
         
         [data-testid="stSidebar"] p, 
@@ -47,59 +57,87 @@ st.markdown("""
         [data-testid="stSidebar"] h1,
         [data-testid="stSidebar"] h2,
         [data-testid="stSidebar"] h3 {
-            color: #ffffff !important;
+            color: #f0f6fc !important;
         }
         
         [data-testid="stSidebar"] .stMarkdown p {
-            color: #f8f9fa !important;
-            font-size: 14px !important;
+            color: #8b949e !important;
+            font-size: 13px !important;
         }
         
-        /* 3. CENTRALIZAÇÃO COMPLETA DOS TÍTULOS E SUBTÍTULOS */
+        /* 4. CENTRALIZAÇÃO E COR DOS TÍTULOS */
         h1, h2, h3, .stSubheader, [data-testid="stHeader"] {
             text-align: center !important;
             justify-content: center !important;
         }
         
         h1, h2, h3 {
-            color: #00d2ff !important;
-            font-family: 'Courier New', Courier, monospace;
+            color: #58a6ff !important; /* Azul ciano corporativo suave, menos agressivo aos olhos */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-weight: 600 !important;
         }
         
-        /* Centraliza também os textos normais de descrição no topo */
-        .stCaption, .stMarkdown div[data-testid="stMarkdownContainer"] p {
+        .stCaption {
+            text-align: center !important;
+            color: #8b949e !important;
+            font-size: 14px !important;
+        }
+        
+        /* 5. DESIGN DOS CARDS DE MÉTRICAS (KPIs) */
+        [data-testid="stMetricValue"] {
+            color: #58a6ff !important;
+            font-size: 28px !important;
+            font-weight: bold !important;
             text-align: center !important;
         }
+        [data-testid="stMetricLabel"] {
+            color: #8b949e !important;
+            font-size: 12px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            text-align: center !important;
+        }
+        [data-testid="stMetricDelta"] {
+            justify-content: center !important;
+        }
         
+        /* Botões laterais modernos */
         .stButton>button {
             width: 100%;
+            background-color: #21262d !important;
+            color: #c9d1d9 !important;
+            border: 1px solid #30363d !important;
+            border-radius: 6px;
+        }
+        .stButton>button:hover {
+            border-color: #58a6ff !important;
+            color: #58a6ff !important;
         }
 
-        /* 4. CORREÇÃO DA BARRA DE MENSAGENS (FUNDO TRANSPARENTE E CONTORNO FINO) */
-        /* Remove o fundo escuro gigante que englobava a caixa de texto */
+        /* 6. BARRA DE MENSAGENS MINIMALISTA FLUTUANTE */
         [data-testid="stChatInput"] {
             background-color: transparent !important;
             box-shadow: none !important;
-            padding: 10px 0px !important;
+            padding: 15px 0px !important;
         }
         
-        /* Customiza apenas o contorno fino da barra interna branca */
         [data-testid="stChatInput"] textarea {
-            color: #161b22 !important;
-            background-color: #ffffff !important;
-            border: 1px solid #00d2ff !important; /* Contorno fino em azul ciano estratégico */
-            border-radius: 8px !important;
-            box-shadow: 0px 2px 10px rgba(0, 210, 255, 0.1) !important;
+            color: #f0f6fc !important;
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            border-radius: 6px !important;
+        }
+        [data-testid="stChatInput"] textarea:focus {
+            border-color: #58a6ff !important;
         }
         
         [data-testid="stChatInput"] textarea::placeholder {
-            color: #6e7681 !important;
+            color: #484f58 !important;
         }
         
-        /* Ajusta o botão de envio (setinha) para combinar com a barra */
         [data-testid="stChatInput"] button {
             background-color: transparent !important;
-            color: #00d2ff !important;
+            color: #58a6ff !important;
         }
     </style>
 """, unsafe_allow_html=True)
