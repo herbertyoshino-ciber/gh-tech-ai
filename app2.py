@@ -15,7 +15,7 @@ st.set_page_config(
 
 # Estilização CSS para garantir contraste e letras super nítidas
 
- # Estilização CSS para garantir contraste perfeito no chat e na barra lateral
+    # Estilização CSS para garantir contraste perfeito no chat, na barra lateral e na caixa de entrada
 st.markdown("""
     <style>
         /* 1. CAIXAS DE MENSAGEM DO CHAT */
@@ -35,15 +35,15 @@ st.markdown("""
         }
         
         /* MENSAGEM DA IA (ASSISTENTE) */
-        /* Mantém as letras da IA claras, pois o fundo da resposta dela é escuro */
+        /* Garante que o texto da IA fique legível no fundo padrão */
         [data-testid="stChatMessageAssistant"] p,
         [data-testid="stChatMessageAssistant"] div,
         [data-testid="stChatMessageAssistant"] span {
-            color: #ffffff !important;
+            color: #161b22 !important;
             font-size: 16px !important;
         }
         
-        /* 2. PAINEL LATERAL (SIDEBAR) */
+        /* 2. PAINEL LATERAL (SIDEBAR) - MANTIDO ESCURO E NITIDO */
         [data-testid="stSidebar"] {
             background-color: #0d1117 !important; /* Fundo grafite escuro */
             border-right: 2px solid #00d2ff;       /* Linha vertical azul ciano */
@@ -77,20 +77,22 @@ st.markdown("""
             width: 100%;
         }
 
-        /* 4. CAIXA DE PERGUNTA (INPUT DO CHAT) */
-        /* Força o fundo da caixa de texto a ser escuro e a letra a ser branca e visível */
+        /* 4. REMOÇÃO DA TARJA PRETA NA CAIXA DE PERGUNTA */
+        /* Remove a cor de fundo preta, restaura o padrão claro e coloca o texto escuro */
         [data-testid="stChatInput"] textarea {
-            color: #ffffff !important;
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
+            color: #161b22 !important;
+            background-color: #ffffff !important;
+            border: 1px solid #d3d3d3 !important;
+            box-shadow: none !important;
         }
         
-        /* Ajusta o texto temporário (Placeholder - "Digite sua dúvida...") */
+        /* Ajusta o texto temporário (Placeholder) para um tom cinza legível no fundo branco */
         [data-testid="stChatInput"] textarea::placeholder {
-            color: #8b949e !important;
+            color: #6e7681 !important;
         }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
