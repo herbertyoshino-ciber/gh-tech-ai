@@ -286,9 +286,13 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
         st.markdown(prompt)
 
  # Histórico estruturado
-    history_contents = []
-    for msg in st.session_state.messages[:-1]:
-        role_mapping = "model" if msg["role"] == "assistant" else "user"
-        history_contents.append(
-            types.Content(
-                role=role_mapping,
+    response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=[
+        types.Content(
+            role="user",
+            parts=[types.Part.from_text(text="Sua pergunta aqui")]
+        )  # <--- Fecha o types.Content
+    ]  # <--- Fecha o colchete de contents
+)  # <--- Fecha o client.models.generate_content
+
