@@ -100,7 +100,7 @@ st.markdown("""
 
 # Prompt Base do Sistema - Foco em Segurança de Forma Estratégica
 BASE_PROMPT = """
-Você é o "HY RI-AI", um assistente de inteligência artificial especialista em Segurança da Informação atuando com foco em Risk Intelligence e Governança Estratégica. Sua missão é apoiar profissionais, gestores e analistas na tomada de decisões seguras, eficientes e alinhadas ao negócio.
+Você é o "HY RISK INTELLIGENCE-AI", um assistente de inteligência artificial especialista em Segurança da Informação atuando com foco em Risk Intelligence e Governança Estratégica. Sua missão é apoiar profissionais, gestores e analistas na tomada de decisões seguras, eficientes e alinhadas ao negócio.
 
 REGRAS DE OPERAÇÃO:
 1. **Abordagem Estratégica**: Responda sempre priorizando a mitigação de riscos, governança, conformidade, arquitetura segura e melhores práticas de cibersegurança.
@@ -121,36 +121,30 @@ if "messages" not in st.session_state:
 def gerar_relatorio_estrategico(historico):
     pdf_buffer = io.BytesIO()
     conteudo = "==================================================\n"
-    conteudo += "        GH TECH AI - RELATÓRIO ESTRATÉGICO        \n"
-    conteudo += "         Segurança de forma estratégica          \n"
+    conteudo += "       HY RISK INTELIGENCE - REPORT (RI-AI)     \n"
+    conteudo += "   Mapeamento estratégico e blindagem de ativos          \n"
     conteudo += "==================================================\n\n"
     
     for idx, msg in enumerate(historico, 1):
-        autor = "USUÁRIO" if msg["role"] == "user" else "GH TECH AI"
+        autor = "USUÁRIO" if msg["role"] == "user" else "HY RI-AI"
         conteudo += f"[{idx}] {autor}:\n"
         conteudo += f"{msg['content']}\n"
         conteudo += "-" * 50 + "\n\n"
         
     conteudo += "==================================================\n"
-    conteudo += "Fim do relatório. GH Tech AI - Proteção e Negócio.\n"
+    conteudo += "Fim do relatório. HY Risk Intelligence - Proteção e Negócio.\n"
     
     pdf_buffer.write(conteudo.encode('utf-8'))
     pdf_buffer.seek(0)
     return pdf_buffer
 
+# CARREGAMENTO SILENCIOSO DA CHAVE (SECRETS)
+gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
+
 # Painel Lateral (Sidebar)
 with st.sidebar:
     st.markdown("<h1 style='text-align: center; color: #00d2ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
-    st.markdown("---")
-    
-    # Campo para chave de API
-    gemini_api_key = st.text_input(
-        "Chave de Acesso (API Key Gemini)",
-        type="password",
-        help="Gere sua chave gratuitamente no painel: https://google.com"
-    )
-    
     st.markdown("---")
     
     # Filtro expandido com categorias de segurança e governança corporativa
@@ -182,12 +176,6 @@ with st.sidebar:
     
     st.markdown("---")
     
-    # GERADOR DE RELATÓRIO PDF (Só exibe se houver mensagens no chat)
-
-    # ... (código anterior da barra lateral)
-    st.markdown("---")
-    
-    # 🚨 ISSO FOI ADICIONADO/ALTERADO:
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
@@ -210,6 +198,19 @@ with st.sidebar:
 st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v3.5</span></h1>", unsafe_allow_html=True)
 st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
+# 📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    st.metric(label="Análises Efetuadas", value=len([m for m in st.session_state.messages if m["role"] == "user"]), delta="SOC Ativo")
+with col2:
+    st.metric(label="Controles de GRC", value="NIST / ISO", delta="Mapeados")
+with col3:
+    st.metric(label="Status de Conformidade", value="98.4%", delta="+1.2% este mês")
+with col4:
+    st.metric(label="Nível de Resiliência", value="Alta", delta="Foco Preventivo")
+
+st.markdown("---")
+
 # Exibe aviso de contexto ativo
 if arquivo_log:
     st.success(f"📎 Arquivo **{arquivo_log.name}** carregado com sucesso como contexto.")
@@ -225,15 +226,16 @@ for message in st.session_state.messages:
 
 client = None
 
-# Inicialização do cliente Google GenAI
+# Inicialização do cliente Google GenAI utilizando a chave secreta de fundo
 if gemini_api_key:
     try:
         client = genai.Client(api_key=gemini_api_key)
     except Exception as e:
-        st.sidebar.error(f"Falha de autenticação: {e}")
+        st.error(f"Falha técnica na inicialização da chave secreta: {e}")
         st.stop()
-elif st.session_state.messages:
-    st.warning("⚠️ Autenticação necessária. Insira sua API Key do Gemini no painel lateral para interagir.")
+else:
+    st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud. Verifique as configurações do painel da nuvem.")
+    st.stop()
 
 # Fluxo principal do chat
 
@@ -241,9 +243,17 @@ elif st.session_state.messages:
               
         # Fluxo principal do chat
 if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
-    if not client:
-        st.warning("⚠️ Operação bloqueada. Insira sua API Key na barra lateral para liberar o terminal.")
-        st.stop()
+    # Anexa logs se houver
+    if arquivo_log:
+        conteudo_log = arquivo_log.read().decode("utf-8")
+        prompt_completo = f"CONTEXTO DO LOG ENVIADO:\n```\n{conteudo_log}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
+    else:
+        prompt_completo = prompt
+
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    
+    with st.chat_message("user"):
+        st.markdown(prompt)
         
     # Anexa logs se houver
     if arquivo_log:
