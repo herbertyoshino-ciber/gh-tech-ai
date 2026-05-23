@@ -12,36 +12,29 @@ st.set_page_config(
     initial_sidebar_state="expanded" 
 
 )
-
-# Estilização CSS para caixas de mensagem com interior totalmente branco
+# Estilização CSS para centralização de títulos, contraste e barra de mensagem minimalista
 st.markdown("""
     <style>
-        /* 1. CONFIGURAÇÃO GERAL DAS CAIXAS DE MENSAGEM (USUÁRIO E IA) */
+        /* 1. CAIXAS DE MENSAGEM DO CHAT (INTERIOR BRANCO) */
         .stChatMessage {
-            background-color: #ffffff !important; /* Interior todo branco */
-            border: 1px solid #d3d3d3 !important;  /* Borda cinza clara para dar acabamento */
+            background-color: #ffffff !important; 
+            border: 1px solid #d3d3d3 !important;  
             border-radius: 10px;
             padding: 15px;
             margin-bottom: 10px;
         }
         
-        /* COR DAS LETRAS DENTRO DO CHAT (USUÁRIO) */
         [data-testid="stChatMessageUser"] p,
         [data-testid="stChatMessageUser"] div,
-        [data-testid="stChatMessageUser"] span {
-            color: #161b22 !important; /* Letras escuras para contraste no fundo branco */
-            font-size: 16px !important;
-        }
-        
-        /* COR DAS LETRAS DENTRO DO CHAT (IA / ASSISTENTE) */
+        [data-testid="stChatMessageUser"] span,
         [data-testid="stChatMessageAssistant"] p,
         [data-testid="stChatMessageAssistant"] div,
         [data-testid="stChatMessageAssistant"] span {
-            color: #161b22 !important; /* Letras também escuras para o fundo branco */
+            color: #161b22 !important; 
             font-size: 16px !important;
         }
         
-        /* 2. PAINEL LATERAL (SIDEBAR) - MANTIDO ESCURO PARA IDENTIDADE VISUAL */
+        /* 2. PAINEL LATERAL (SIDEBAR) */
         [data-testid="stSidebar"] {
             background-color: #0d1117 !important;
             border-right: 2px solid #00d2ff;
@@ -62,29 +55,55 @@ st.markdown("""
             font-size: 14px !important;
         }
         
-        /* 3. TÍTULOS DO SISTEMA */
+        /* 3. CENTRALIZAÇÃO COMPLETA DOS TÍTULOS E SUBTÍTULOS */
+        h1, h2, h3, .stSubheader, [data-testid="stHeader"] {
+            text-align: center !important;
+            justify-content: center !important;
+        }
+        
         h1, h2, h3 {
             color: #00d2ff !important;
             font-family: 'Courier New', Courier, monospace;
+        }
+        
+        /* Centraliza também os textos normais de descrição no topo */
+        .stCaption, .stMarkdown div[data-testid="stMarkdownContainer"] p {
+            text-align: center !important;
         }
         
         .stButton>button {
             width: 100%;
         }
 
-        /* 4. CAIXA DE PERGUNTA (INPUT) TAMBÉM INTEGRADA EM BRANCO */
+        /* 4. CORREÇÃO DA BARRA DE MENSAGENS (FUNDO TRANSPARENTE E CONTORNO FINO) */
+        /* Remove o fundo escuro gigante que englobava a caixa de texto */
+        [data-testid="stChatInput"] {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            padding: 10px 0px !important;
+        }
+        
+        /* Customiza apenas o contorno fino da barra interna branca */
         [data-testid="stChatInput"] textarea {
             color: #161b22 !important;
             background-color: #ffffff !important;
-            border: 1px solid #d3d3d3 !important;
-            box-shadow: none !important;
+            border: 1px solid #00d2ff !important; /* Contorno fino em azul ciano estratégico */
+            border-radius: 8px !important;
+            box-shadow: 0px 2px 10px rgba(0, 210, 255, 0.1) !important;
         }
         
         [data-testid="stChatInput"] textarea::placeholder {
             color: #6e7681 !important;
         }
+        
+        /* Ajusta o botão de envio (setinha) para combinar com a barra */
+        [data-testid="stChatInput"] button {
+            background-color: transparent !important;
+            color: #00d2ff !important;
+        }
     </style>
 """, unsafe_allow_html=True)
+
 
 
 
