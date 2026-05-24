@@ -1,37 +1,28 @@
 import os
 import io
+import re
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from google import genai
 from google.genai import types
 
-# Configuração da página com a identidade corporativa
+# CONFIGURAÇÃO DE PÁGINA BLINDADA
 st.set_page_config(
     page_title="HY Risk Intelligence | RI-AI",
     page_icon="🛡️",
     layout="wide",
-    initial_sidebar_state="expanded" 
+    initial_sidebar_state="expanded"
 )
-# 🛡️ FUNÇÃO DE HIGIENIZAÇÃO DE DADOS CONFIDENCIAIS (DATA MASKING)
-# Varre os logs e perguntas antes de enviar para a API, mascarando dados sensíveis automagicamente
-def higienizar_contexto(texto):
-    # Substitui endereços de IP por uma tag genérica
-    texto = re.sub(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', '[IP_REDACTED]', texto)
-    # Substitui e-mails estruturados
-    texto = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL_REDACTED]', texto)
-    # Substitui CPFs brasileiros
-    texto = re.sub(r'\b\d{3}\.\d{3}\.\d{3}-\d{2}\b', '[CPF_REDACTED]', texto)
-    return texto
 
-       
-        # ESTILIZAÇÃO CSS PREMIUM ADAPTADA E BLINDADA (DARK MODE)
+# ESTILIZAÇÃO CSS PREMIUM ADAPTADA E BLINDADA (DARK MODE)
 st.markdown("""
     <style>
         /* FORÇADOR GLOBAL DE FUNDO ESCURO CORPORATIVO */
         .stApp, html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             background-color: #0d1117 !important;
         }
+        
         /* 1. CAIXAS DE MENSAGEM DO CHAT (DARK INTEGRADO) */
         .stChatMessage {
             background-color: #161b22 !important; 
@@ -53,7 +44,8 @@ st.markdown("""
             font-size: 15px !important;
             line-height: 1.6 !important;
         }
-         /* 2. PAINEL LATERAL (SIDEBAR) CONTÍNUO */
+        
+        /* 2. PAINEL LATERAL (SIDEBAR) CONTÍNUO */
         [data-testid="stSidebar"] {
             background-color: #070a0e !important;
             border-right: 1px solid #30363d !important;
@@ -68,7 +60,8 @@ st.markdown("""
         [data-testid="stSidebar"] h3 {
             color: #f0f6fc !important;
         }
-         [data-testid="stSidebar"] .stMarkdown p {
+        
+        [data-testid="stSidebar"] .stMarkdown p {
             color: #8b949e !important;
             font-size: 13px !important;
         }
@@ -83,6 +76,7 @@ st.markdown("""
             text-align: center !important;
             justify-content: center !important;
         }
+        
         h1, h2, h3 {
             color: #58a6ff !important; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -94,7 +88,8 @@ st.markdown("""
             color: #8b949e !important;
             font-size: 14px !important;
         }
-         /* 4. DESIGN DOS CARDS DE MÉTRICAS (KPIs) */
+        
+        /* 4. DESIGN DOS CARDS DE MÉTRICAS (KPIs) */
         [data-testid="stMetricValue"] {
             color: #58a6ff !important;
             font-size: 28px !important;
@@ -131,41 +126,6 @@ st.markdown("""
             box-shadow: none !important;
             padding: 15px 0px !important;
         }
-           [data-testid="stChatInput"] textarea {
-            color: #f0f6fc !important;
-            background-color: #161b22 !important;
-            border: 1px solid #30363d !important;
-            border-radius: 6px !important;
-        }
-        [data-testid="stChatInput"] textarea:focus {
-            border-color: #58a6ff !important;
-        }
-        
-        [data-testid="stChatInput"] textarea::placeholder {
-            color: #484f58 !important;
-        }
-        [data-testid="stChatInput"] button {
-            background-color: transparent !important;
-            color: #58a6ff !important;
-        }
-
-        /* Ajuste do uploader para ficar compacto */
-        .stFileUploader section {
-            padding: 0.5rem 1rem !important;
-            background-color: #161b22 !important;
-            border: 1px dashed #30363d !important;
-            border-radius: 6px !important;
-        }
-        .stFileUploader label {
-            display: none !important;
-        }
-        
-        /* 6. BARRA DE MENSAGENS MINIMALISTA FLUTUANTE */
-        [data-testid="stChatInput"] {
-            background-color: transparent !important;
-            box-shadow: none !important;
-            padding: 15px 0px !important;
-        }
         
         [data-testid="stChatInput"] textarea {
             color: #f0f6fc !important;
@@ -185,9 +145,19 @@ st.markdown("""
             background-color: transparent !important;
             color: #58a6ff !important;
         }
+
+        /* Ajuste do uploader para ficar compacto */
+        .stFileUploader section {
+            padding: 0.5rem 1rem !important;
+            background-color: #161b22 !important;
+            border: 1px dashed #30363d !important;
+            border-radius: 6px !important;
+        }
+        .stFileUploader label {
+            display: none !important;
+        }
     </style>
 """, unsafe_allow_html=True)
-
 
 # Prompt Base do Sistema - Foco em Risk Intelligence e Governança
 BASE_PROMPT = """
@@ -202,6 +172,13 @@ REGRAS DE OPERAÇÃO:
    * **📚 Referências**: Inclua uma lista de frameworks, normas ou guias de governança internacional relevantes para o caso (como diretrizes do NIST, ISO/IEC 27001, COBIT, OWASP ou MITRE ATT&CK).
 3. **Ética**: Nunca forneça metodologias ofensivas para invasão ou destruição de ativos de forma ilegal. O foco deve ser estritamente defensivo, preventivo e corporativo.
 """
+
+# Função de Higienização (Data Masking)
+def higienizar_contexto(texto):
+    texto = re.sub(r'\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b', '[IP_REDACTED]', texto)
+    texto = re.sub(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', '[EMAIL_REDACTED]', texto)
+    texto = re.sub(r'\b\d{3}\.\d{3}\.\d{3}-\d{2}\b', '[CPF_REDACTED]', texto)
+    return texto
 
 # Inicializa as variáveis no session_state do Streamlit
 if "messages" not in st.session_state:
@@ -231,13 +208,12 @@ def gerar_relatorio_estrategico(historico):
 # CARREGAMENTO SILENCIOSO DA CHAVE (SECRETS)
 gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
 
-# Painel Lateral (Sidebar) - Versão Limpa sem área de login/chave
+# Painel Lateral (Sidebar)
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; color: #00d2ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #58a6ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
     st.markdown("---")
     
-    # Filtro expandido com categorias de segurança e governança corporativa
     st.markdown("### 🔍 Escopo de Análise")
     categoria = st.selectbox(
         "Selecione o foco do problema:",
@@ -255,18 +231,20 @@ with st.sidebar:
     )
     
     st.markdown("---")
-
-    # Upload de logs
-    st.markdown("### 📁 Analisador de Logs")
-    arquivo_log = st.file_uploader(
-        "Envie um arquivo de log (.txt ou .log):", 
-        type=["txt", "log"],
-        help="O conteúdo será adicionado como contexto para a IA."
-    )
     
-    st.markdown("---")
+    if st.session_state.messages:
+        st.markdown("### 📄 Exportar Dados")
+        dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
+        st.download_button(
+            label="📥 Baixar Relatório Estratégico (.pdf)",
+            data=dados_pdf,
+            file_name="relatorio_hy_risk_intelligence.pdf",
+            mime="application/pdf",
+            key="download_pdf_btn"
+        )
+        st.markdown("---")
     
-    # Renderizador estável do Botão de Exportar PDF
+ # Renderizador estável do Botão de Exportar PDF
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
