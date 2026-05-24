@@ -415,7 +415,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                                 ⏳ **Fila de Espera GRC Ativa**
                                 
                                 O volume de requisições simultâneas excedeu a cota diária global do servidor do Google. 
-                                Por favor, **aguarde 60 segundos** e clique em enviar novamente para reprocessar o terminal.
+                                Por favor, **Tente Novamente mais tarde!! ** e clique em enviar novamente para reprocessar o terminal.
                             """)
                             st.stop()
                     else:
