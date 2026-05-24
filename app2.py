@@ -378,10 +378,14 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
         types.Content(role="user", parts=[types.Part.from_text(text=prompt_completo)]))
         
 # 🚨 ENCONTRE ESTE PONTO ABAIXO (POR VOLTA DA LINHA 315) E SUBSTITUA DAQUI ATÉ O RODAPÉ:
-    with chat_container:
+      with chat_container:
         with st.chat_message("assistant"):
             with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
                 try:
+                    # 🚨 ESSAS DUAS LINHAS ABAIXO PRECISAM ESTAR AQUI PARA DEFINIR A VARIÁVEL:
+                    contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
+                    prompt_final = BASE_PROMPT + contexto_categoria
+                    
                     # Tentativa 1: Modelo Principal (2.0)
                     config = types.GenerateContentConfig(
                         system_instruction=prompt_final,
@@ -409,7 +413,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                                 model='gemini-1.5-flash',
                                 contents=history_contents,
                                 config=config
-                    )
+                            )
                             ai_resposta = response.text
                         except Exception as e_fallback:
                             st.warning("""
@@ -430,6 +434,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     st.rerun()
                 except Exception as e_interface:
                     st.error(f"Erro na renderização da interface: {e_interface}")
+
 
 
 # Rodapé
