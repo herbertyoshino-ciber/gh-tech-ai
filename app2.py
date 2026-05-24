@@ -386,7 +386,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     )
                     
                     response = client.models.generate_content(
-                        model='gemini-2.5-flash-8b',
+                        model='gemini-2.0-flash',
                         contents=history_contents,
                         config=config
                     )
