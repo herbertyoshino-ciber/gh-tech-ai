@@ -301,15 +301,16 @@ with col_chart:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_faq:
+    # Título da seção de consulta rápida
     st.markdown("<p style='font-weight:bold; color:#58a6ff; margin-bottom:5px;'>🔍 Guia Rápido de Governança</p>", unsafe_allow_html=True)
     
-    with st.accordion("🚨 Prazo Notificação ANPD"):
+    # 🚨 LINHAS CORRIGIDAS: Mudado de st.accordion para st.expander (O componente correto do Streamlit)
+    with st.expander("🚨 Prazo Notificação ANPD"):
         st.write("Sob a ótica da LGPD, incidentes graves que envolvam dados pessoais devem ser comunicados à ANPD e aos titulares em prazo razoável (geralmente interpretado pelo mercado como até 2 dias úteis).")
         
-    with st.accordion("🛠️ O que compõe RTO e RPO?"):
+    with st.expander("🛠️ O que compõe RTO e RPO?"):
         st.write("RTO (Recovery Time Objective) é o tempo máximo tolerável para restabelecer um sistema após uma falha. RPO (Recovery Point Objective) define a quantidade máxima de dados tolerada para perda.")
 
-# 🚨 A SUBSTITUIÇÃO TERMINA AQUI. ABAIXO CONTINUA O RESTANTE DO SEU CÓDIGO NORMAL:
 st.markdown("---")
 
 # CONTAINER DE HISTÓRICO DO CHAT
