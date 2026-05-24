@@ -9,7 +9,7 @@ from google.genai import types
 
 # CONFIGURAÇÃO DE PÁGINA BLINDADA
 st.set_page_config(
-    page_title="HY Risk Intelligence | -AI",
+    page_title="HY Risk Intelligence | HI-AI",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -256,7 +256,7 @@ with st.sidebar:
 # --- FIM DO BLOCO DA SIDEBAR ---
 
 # Título principal da interface
-st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v5.0</span></h1>", unsafe_allow_html=True)
+st.markdown("<h1>🛡️ HY-AI <span style='font-size: 18px; color: #8b949e;'>v5.0</span></h1>", unsafe_allow_html=True)
 st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
 # 📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
