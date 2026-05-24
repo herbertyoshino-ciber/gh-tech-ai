@@ -301,13 +301,15 @@ with col_chart:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_faq:
-    # Guia Rápido de Governança
     st.markdown("<p style='font-weight:bold; color:#58a6ff; margin-bottom:5px;'>🔍 Guia Rápido de Governança</p>", unsafe_allow_html=True)
-    with st.accordion("🚨 Qual o prazo de notificação da ANPD?"):
-        st.caption("Sob a ótica da LGPD, incidentes graves que envolvam dados pessoais devem ser comunicados à ANPD e aos titulares em prazo razoável (geralmente interpretado pelo mercado como até 2 dias úteis).")
-    with st.accordion("🛠️ O que compõe o RTO e o RPO?"):
-        st.caption("RTO (Recovery Time Objective) é o tempo máximo tolerável para restabelecer um sistema após uma falha. RPO (Recovery Point Objective) define a quantidade máxima de dados que a empresa aceita perder (medido em tempo desde o último backup).")
+    
+    with st.accordion("🚨 Prazo Notificação ANPD"):
+        st.write("Sob a ótica da LGPD, incidentes graves que envolvam dados pessoais devem ser comunicados à ANPD e aos titulares em prazo razoável (geralmente interpretado pelo mercado como até 2 dias úteis).")
+        
+    with st.accordion("🛠️ O que compõe RTO e RPO?"):
+        st.write("RTO (Recovery Time Objective) é o tempo máximo tolerável para restabelecer um sistema após uma falha. RPO (Recovery Point Objective) define a quantidade máxima de dados tolerada para perda.")
 
+# 🚨 A SUBSTITUIÇÃO TERMINA AQUI. ABAIXO CONTINUA O RESTANTE DO SEU CÓDIGO NORMAL:
 st.markdown("---")
 
 # CONTAINER DE HISTÓRICO DO CHAT
