@@ -193,7 +193,7 @@ def gerar_relatorio_estrategico(historico):
     conteudo += "==================================================\n\n"
     
     for idx, msg in enumerate(historico, 1):
-        autor = "USUÁRIO" if msg["role"] == "user" else "HY RI-AI"
+        autor = "USUÁRIO" if msg["role"] == "user" else "HY-AI"
         conteudo += f"[{idx}] {autor}:\n"
         conteudo += f"{msg['content']}\n"
         conteudo += "-" * 50 + "\n\n"
