@@ -9,7 +9,7 @@ from google.genai import types
 
 # CONFIGURAÇÃO DE PÁGINA BLINDADA
 st.set_page_config(
-    page_title="HY Risk Intelligence | RI-AI",
+    page_title="HY Risk Intelligence | -AI",
     page_icon="🛡️",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -161,7 +161,7 @@ st.markdown("""
 
 # Prompt Base do Sistema - Foco em Risk Intelligence e Governança
 BASE_PROMPT = """
-Você é o "HY RI-AI", um assistente de inteligência artificial especialista em Segurança da Informação atuando com foco em Risk Intelligence e Governança Estratégica. Sua missão é apoiar profissionais, gestores e analistas na tomada de decisões seguras, eficientes e alinhadas ao negócio.
+Você é o "HY RISK INTELLIGENCE-AI", um assistente de inteligência artificial especialista em Segurança da Informação atuando com foco em Risk Intelligence e Governança Estratégica. Sua missão é apoiar profissionais, gestores e analistas na tomada de decisões seguras, eficientes e alinhadas ao negócio.
 
 REGRAS DE OPERAÇÃO:
 1. **Abordagem Estratégica**: Responda sempre priorizando a mitigação de riscos, governança, conformidade, arquitetura segura e melhores práticas de cibersegurança.
