@@ -208,6 +208,10 @@ def gerar_relatorio_estrategico(historico):
 # CARREGAMENTO SILENCIOSO DA CHAVE (SECRETS)
 gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
 
+# Inicializa a variável do arquivo no session state para evitar NameError
+if "arquivo_log_dados" not in st.session_state:
+    st.session_state.arquivo_log_dados = None
+
 # Painel Lateral (Sidebar)
 with st.sidebar:
     st.markdown("<h1 style='text-align: center; color: #58a6ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
@@ -235,8 +239,15 @@ with st.sidebar:
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
-       
-    # Código do botão de limpar histórico (último item dentro do bloco with st.sidebar:)
+        st.download_button(
+            label="📥 Baixar Relatório Estratégico (.pdf)",
+            data=dados_pdf,
+            file_name="relatorio_hy_risk_intelligence.pdf",
+            mime="application/pdf",
+            key="download_pdf_btn"
+        )
+        st.markdown("---")
+    
     if st.button("🗑️ Limpar Histórico do Terminal", type="secondary"):
         st.session_state.messages = []
         st.session_state.arquivo_log_dados = None
@@ -261,11 +272,11 @@ with col4:
 
 st.markdown("---")
 
-# 📊 RECURSO TOP 1: DASHBOARD GRÁFICO DE VETORES DE RISCO (PLOTLY)
+# 📊 DASHBOARD GRÁFICO DE VETORES DE RISCO (PLOTLY) E GUIA DE CONSULTA
 col_chart, col_faq = st.columns([2, 1])
 
 with col_chart:
-    # Dados simulados para o gráfico de radar corporativo
+    # Dados de modelagem para o gráfico de radar corporativo
     dados_radar = pd.DataFrame(dict(
         r=[4, 5, 3, 4, 5],
         theta=['Conformidade', 'Segurança de Dados', 'Gestão de Crise', 'Arquitetura de Redes', 'Resposta a Incidentes']
@@ -290,7 +301,7 @@ with col_chart:
     st.plotly_chart(fig, use_container_width=True)
 
 with col_faq:
-    # 📊 RECURSO TOP 2: ACORDIONS EXPLICATIVOS (FAQ RÁPIDO DE CONSULTA)
+    # Guia Rápido de Governança
     st.markdown("<p style='font-weight:bold; color:#58a6ff; margin-bottom:5px;'>🔍 Guia Rápido de Governança</p>", unsafe_allow_html=True)
     with st.accordion("🚨 Qual o prazo de notificação da ANPD?"):
         st.caption("Sob a ótica da LGPD, incidentes graves que envolvam dados pessoais devem ser comunicados à ANPD e aos titulares em prazo razoável (geralmente interpretado pelo mercado como até 2 dias úteis).")
@@ -306,8 +317,6 @@ with chat_container:
     for index, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
-            
-            # 📊 RECURSO TOP 3: SISTEMA DE FEEDBACK ATIVO (👍/👎) NAS RESPOSTAS DA IA
             if message["role"] == "assistant":
                 st.feedback("thumbs", key=f"fb_{index}")
 
@@ -328,7 +337,7 @@ else:
 st.markdown("<br><br>", unsafe_allow_html=True)
 
 arquivo_log = st.file_uploader(
-    "Discreto",
+    "Discreto", 
     type=["txt", "log"],
     label_visibility="collapsed"
 )
@@ -370,7 +379,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     config = types.GenerateContentConfig(
                         system_instruction=prompt_final,
                         temperature=0.3,
-                        max_output_tokens=4096
+                        max_output_tokens=4096 
                     )
                     
                     response = client.models.generate_content(
@@ -400,8 +409,7 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-
-
+       
 
      
                 
