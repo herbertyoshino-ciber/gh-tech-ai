@@ -214,7 +214,7 @@ if "arquivo_log_dados" not in st.session_state:
 
 # Painel Lateral (Sidebar)
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; color: #58a6ff !important;'>🛡️ HY RI-AI</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='text-align: center; color: #58a6ff !important;'>🛡️ HY-AI</h1>", unsafe_allow_html=True)
     st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
     st.markdown("---")
     
