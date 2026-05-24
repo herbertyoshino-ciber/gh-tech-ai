@@ -235,35 +235,17 @@ with st.sidebar:
     if st.session_state.messages:
         st.markdown("### 📄 Exportar Dados")
         dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
-        st.download_button(
-            label="📥 Baixar Relatório Estratégico (.pdf)",
-            data=dados_pdf,
-            file_name="relatorio_hy_risk_intelligence.pdf",
-            mime="application/pdf",
-            key="download_pdf_btn"
-        )
-        st.markdown("---")
-    
- # Renderizador estável do Botão de Exportar PDF
-    if st.session_state.messages:
-        st.markdown("### 📄 Exportar Dados")
-        dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
-        st.download_button(
-            label="📥 Baixar Relatório Estratégico (.pdf)",
-            data=dados_pdf,
-            file_name="relatorio_hy_risk_intelligence.pdf",
-            mime="application/pdf",
-            key="download_pdf_btn"
-        )
-        st.markdown("---")
-    
-    # Botão para limpar histórico do chat
+       
+    # Código do botão de limpar histórico (último item dentro do bloco with st.sidebar:)
     if st.button("🗑️ Limpar Histórico do Terminal", type="secondary"):
         st.session_state.messages = []
+        st.session_state.arquivo_log_dados = None
         st.rerun()
 
+# --- FIM DO BLOCO DA SIDEBAR ---
+
 # Título principal da interface
-st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v4.0</span></h1>", unsafe_allow_html=True)
+st.markdown("<h1>🛡️ HY RI-AI <span style='font-size: 18px; color: #8b949e;'>v5.0</span></h1>", unsafe_allow_html=True)
 st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
 
 # 📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
@@ -279,22 +261,59 @@ with col4:
 
 st.markdown("---")
 
-# Exibe aviso de contexto ativo
-if arquivo_log:
-    st.success(f"📎 Arquivo **{arquivo_log.name}** carregado com sucesso como contexto.")
-elif categoria != "Geral / Sem Filtro":
-    st.caption(f"Filtro ativo: **{categoria}**")
-else:
-    st.caption("Consulte vulnerabilidades, analise riscos de arquitetura e otimize suas defesas corporativas.")
+# 📊 RECURSO TOP 1: DASHBOARD GRÁFICO DE VETORES DE RISCO (PLOTLY)
+col_chart, col_faq = st.columns([2, 1])
 
-# Exibe mensagens anteriores cadastradas no histórico
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+with col_chart:
+    # Dados simulados para o gráfico de radar corporativo
+    dados_radar = pd.DataFrame(dict(
+        r=[4, 5, 3, 4, 5],
+        theta=['Conformidade', 'Segurança de Dados', 'Gestão de Crise', 'Arquitetura de Redes', 'Resposta a Incidentes']
+    ))
+    
+    fig = px.line_polar(
+        dados_radar, 
+        r='r', 
+        theta='theta', 
+        line_close=True, 
+        range_r=[0, 5], 
+        title="🛡️ Índice de Maturidade de Risco Operacional"
+    )
+    fig.update_traces(fill='toself', line_color='#58a6ff')
+    fig.update_layout(
+        template="plotly_dark",
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)',
+        margin=dict(l=20, r=20, t=40, b=20),
+        height=320
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+with col_faq:
+    # 📊 RECURSO TOP 2: ACORDIONS EXPLICATIVOS (FAQ RÁPIDO DE CONSULTA)
+    st.markdown("<p style='font-weight:bold; color:#58a6ff; margin-bottom:5px;'>🔍 Guia Rápido de Governança</p>", unsafe_allow_html=True)
+    with st.accordion("🚨 Qual o prazo de notificação da ANPD?"):
+        st.caption("Sob a ótica da LGPD, incidentes graves que envolvam dados pessoais devem ser comunicados à ANPD e aos titulares em prazo razoável (geralmente interpretado pelo mercado como até 2 dias úteis).")
+    with st.accordion("🛠️ O que compõe o RTO e o RPO?"):
+        st.caption("RTO (Recovery Time Objective) é o tempo máximo tolerável para restabelecer um sistema após uma falha. RPO (Recovery Point Objective) define a quantidade máxima de dados que a empresa aceita perder (medido em tempo desde o último backup).")
+
+st.markdown("---")
+
+# CONTAINER DE HISTÓRICO DO CHAT
+chat_container = st.container()
+
+with chat_container:
+    for index, message in enumerate(st.session_state.messages):
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+            
+            # 📊 RECURSO TOP 3: SISTEMA DE FEEDBACK ATIVO (👍/👎) NAS RESPOSTAS DA IA
+            if message["role"] == "assistant":
+                st.feedback("thumbs", key=f"fb_{index}")
 
 client = None
 
-# Inicialização do cliente Google GenAI utilizando a chave secreta de fundo
+# Inicialização do cliente Google GenAI
 if gemini_api_key:
     try:
         client = genai.Client(api_key=gemini_api_key)
@@ -302,75 +321,87 @@ if gemini_api_key:
         st.error(f"Falha técnica na inicialização da chave secreta: {e}")
         st.stop()
 else:
-    st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud. Verifique as configurações do painel da nuvem.")
+    st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud.")
     st.stop()
+
+# --- ÁREA DE INPUT DISCRETA NO FINAL ---
+st.markdown("<br><br>", unsafe_allow_html=True)
+
+arquivo_log = st.file_uploader(
+    "Discreto",
+    type=["txt", "log"],
+    label_visibility="collapsed"
+)
+
+if arquivo_log:
+    st.session_state.arquivo_log_dados = arquivo_log
+    st.markdown(f"<p style='color:#58a6ff; font-size:12px; margin-top:-10px; margin-bottom:10px;'>📎 Arquivo carregado: <b>{arquivo_log.name}</b></p>", unsafe_allow_html=True)
 
 # Fluxo principal do chat
 if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
-    # Anexa logs se houver
-    if arquivo_log:
-        conteudo_log = arquivo_log.read().decode("utf-8")
-        prompt_completo = f"CONTEXTO DO LOG ENVIADO:\n```\n{conteudo_log}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
+    if st.session_state.arquivo_log_dados:
+        conteudo_puro = st.session_state.arquivo_log_dados.read().decode("utf-8")
+        conteudo_higienizado = higienizar_contexto(conteudo_puro)
+        prompt_completo = f"CONTEXTO DO LOG ENVIADO (HIGIENIZADO):\n```\n{conteudo_higienizado}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
     else:
         prompt_completo = prompt
 
     st.session_state.messages.append({"role": "user", "content": prompt})
     
-    with st.chat_message("user"):
-        st.markdown(prompt)
+    with chat_container:
+        with st.chat_message("user"):
+            st.markdown(prompt)
         
-    # Histórico estruturado
     history_contents = []
     for msg in st.session_state.messages[:-1]:
         role_mapping = "model" if msg["role"] == "assistant" else "user"
         history_contents.append(
-            types.Content(
-                role=role_mapping,
-
-                parts=[types.Part.from_text(text=msg["content"])]
-            )
-        )
+            types.Content(role=role_mapping, parts=[types.Part.from_text(text=msg["content"])]))
     history_contents.append(
-        types.Content(
-            role="user",
-            parts=[types.Part.from_text(text=prompt_completo)]
-        )
-    )
+        types.Content(role="user", parts=[types.Part.from_text(text=prompt_completo)]))
         
-    with st.chat_message("assistant"):
-        with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
-            try:
-                contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
-                prompt_final = BASE_PROMPT + contexto_categoria
-                
-                config = types.GenerateContentConfig(
-                    system_instruction=prompt_final,
-                    temperature=0.4,
-                    max_output_tokens=2048
-                )
-                
-                response = client.models.generate_content(
-                    model='gemini-2.5-flash',
-                    contents=history_contents,
-                    config=config
-                )
-                
-                ai_resposta = response.text
-                st.markdown(ai_resposta)
-                
-                st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
-                st.rerun()
-                
-            except Exception as e:
-                st.error(f"Erro na comunicação com o core da IA: {e}")
+    with chat_container:
+        with st.chat_message("assistant"):
+            with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
+                try:
+                    contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
+                    prompt_final = BASE_PROMPT + contexto_categoria
+                    
+                    config = types.GenerateContentConfig(
+                        system_instruction=prompt_final,
+                        temperature=0.3,
+                        max_output_tokens=4096
+                    )
+                    
+                    response = client.models.generate_content(
+                        model='gemini-2.5-flash',
+                        contents=history_contents,
+                        config=config
+                    )
+                    
+                    ai_resposta = response.text
+                    st.markdown(ai_resposta)
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
+                    st.toast("Análise de riscos concluída!", icon="🛡️")
+                    st.rerun()
+                    
+                except Exception as e:
+                    st.error(f"Erro na comunicação com o core da IA: {e}")
 
 # Rodapé
 st.markdown(
     """
-    <div style="text-align: center; color: #8b949e; font-size: 12px;">
+    <div style="text-align: center; color: #8b949e; font-size: 12px; margin-top: 50px;">
         <hr style="border-color: #21262d;">
-        <p>🔒 HY Risk Intelligence (HY RI-AI) — Segurança de forma estratégica. Todos os direitos reservados.</p>
+        <p>🔒 HY Risk Intelligence (HY RI-AI) — Mapeamento estratégico e blindagem de ativos. Todos os direitos reservados.</p>
     </div>
     """,
     unsafe_allow_html=True
 )
+
+
+
+
+     
+                
