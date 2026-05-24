@@ -389,14 +389,14 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     )
                     
                     response = client.models.generate_content(
-                        model='gemini-2.0-flash',
+                        model='gemini-2.5-flash',
                         contents=history_contents,
                         config=config
                     )
                     ai_resposta = response.text
 
                 except Exception as e_principal:
-                    # Se o modelo 2.0 estourar a cota (Erro 429), tenta o modelo 1.5 automaticamente
+                    # Se o modelo 2.5 estourar a cota (Erro 429), tenta o modelo 2.0 automaticamente
                     if "429" in str(e_principal) or "RESOURCE_EXHAUSTED" in str(e_principal):
                         try:
                             config = types.GenerateContentConfig(
@@ -405,7 +405,7 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                                 max_output_tokens=4096 
                             )
                             response = client.models.generate_content(
-                                model='gemini-1.5-flash',
+                                model='gemini-2.0-flash',
                                 contents=history_contents,
                                 config=config
                             )
