@@ -372,13 +372,17 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
     history_contents.append(
         types.Content(role="user", parts=[types.Part.from_text(text=prompt_completo)]))
         
+    
+                   # ... (código anterior das mensagens do histórico)
+    history_contents.append(
+        types.Content(role="user", parts=[types.Part.from_text(text=prompt_completo)]))
+        
+# 🚨 ENCONTRE ESTE PONTO ABAIXO (POR VOLTA DA LINHA 315) E SUBSTITUA DAQUI ATÉ O RODAPÉ:
     with chat_container:
         with st.chat_message("assistant"):
             with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
                 try:
-                    contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
-                    prompt_final = BASE_PROMPT + contexto_categoria
-                    
+                    # Tentativa 1: Modelo Principal (2.0)
                     config = types.GenerateContentConfig(
                         system_instruction=prompt_final,
                         temperature=0.3,
@@ -390,16 +394,43 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                         contents=history_contents,
                         config=config
                     )
-                    
                     ai_resposta = response.text
+
+                except Exception as e_principal:
+                    # Se o modelo 2.0 estourar a cota (Erro 429), tenta o modelo 1.5 automaticamente
+                    if "429" in str(e_principal) or "RESOURCE_EXHAUSTED" in str(e_principal):
+                        try:
+                            config = types.GenerateContentConfig(
+                                system_instruction=prompt_final,
+                                temperature=0.3,
+                                max_output_tokens=4096 
+                            )
+                            response = client.models.generate_content(
+                                model='gemini-1.5-flash',
+                                contents=history_contents,
+                                config=config
+                    )
+                            ai_resposta = response.text
+                        except Exception as e_fallback:
+                            st.warning("""
+                                ⏳ **Fila de Espera GRC Ativa**
+                                
+                                O volume de requisições simultâneas excedeu a cota diária global do servidor do Google. 
+                                Por favor, **aguarde 60 segundos** e clique em enviar novamente para reprocessar o terminal.
+                            """)
+                            st.stop()
+                    else:
+                        st.error(f"Erro técnico no core da IA: {e_principal}")
+                        st.stop()
+
+                try:
                     st.markdown(ai_resposta)
-                    
                     st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
                     st.toast("Análise de riscos concluída!", icon="🛡️")
                     st.rerun()
-                    
-                except Exception as e:
-                    st.error(f"Erro na comunicação com o core da IA: {e}")
+                except Exception as e_interface:
+                    st.error(f"Erro na renderização da interface: {e_interface}")
+
 
 # Rodapé
 st.markdown(
