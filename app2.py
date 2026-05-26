@@ -19,9 +19,12 @@ st.set_page_config(
 # ESTILIZAÇÃO CSS PREMIUM ADAPTADA E BLINDADA (DARK MODE)
 st.markdown("""
     <style>
+        /* FORÇADOR GLOBAL DE FUNDO ESCURO CORPORATIVO */
         .stApp, html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             background-color: #0d1117 !important;
         }
+        
+        /* 1. CAIXAS DE MENSAGEM DO CHAT (DARK INTEGRADO) */
         .stChatMessage {
             background-color: #161b22 !important; 
             border: 1px solid #30363d !important;  
@@ -30,41 +33,64 @@ st.markdown("""
             margin-bottom: 12px;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
         }
-        [data-testid="stChatMessageUser"] p, [data-testid="stChatMessageUser"] div, [data-testid="stChatMessageUser"] span,
-        [data-testid="stChatMessageAssistant"] p, [data-testid="stChatMessageAssistant"] div, [data-testid="stChatMessageAssistant"] span {
+        
+        /* Força a cor correta do texto em todas as mensagens */
+        [data-testid="stChatMessageUser"] p,
+        [data-testid="stChatMessageUser"] div,
+        [data-testid="stChatMessageUser"] span,
+        [data-testid="stChatMessageAssistant"] p,
+        [data-testid="stChatMessageAssistant"] div,
+        [data-testid="stChatMessageAssistant"] span {
             color: #c9d1d9 !important; 
             font-size: 15px !important;
             line-height: 1.6 !important;
         }
+        
+        /* 2. PAINEL LATERAL (SIDEBAR) CONTÍNUO */
         [data-testid="stSidebar"] {
             background-color: #070a0e !important;
             border-right: 1px solid #30363d !important;
         }
-        [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span, [data-testid="stSidebar"] div,
-        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
+        
+        [data-testid="stSidebar"] p, 
+        [data-testid="stSidebar"] label, 
+        [data-testid="stSidebar"] span, 
+        [data-testid="stSidebar"] div,
+        [data-testid="stSidebar"] h1,
+        [data-testid="stSidebar"] h2,
+        [data-testid="stSidebar"] h3 {
             color: #f0f6fc !important;
         }
+        
         [data-testid="stSidebar"] .stMarkdown p {
             color: #8b949e !important;
             font-size: 13px !important;
         }
+
+        /* Ajuste fino para os textos do selectbox na sidebar ficarem brancos */
         [data-testid="stSidebar"] div[data-baseweb="select"] div {
             color: #ffffff !important;
         }
+        
+        /* 3. CENTRALIZAÇÃO E COR DOS TÍTULOS */
         h1, h2, h3, .stSubheader, [data-testid="stHeader"] {
             text-align: center !important;
             justify-content: center !important;
         }
+        
         h1, h2, h3 {
             color: #58a6ff !important; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             font-weight: 600 !important;
         }
+        
         .stCaption {
             text-align: center !important;
             color: #8b949e !important;
             font-size: 14px !important;
         }
+        
+        /* 4. DESIGN DOS CARDS DE MÉTRICAS (KPIs) */
         [data-testid="stMetricValue"] {
             color: #58a6ff !important;
             font-size: 28px !important;
@@ -81,6 +107,8 @@ st.markdown("""
         [data-testid="stMetricDelta"] {
             justify-content: center !important;
         }
+        
+        /* Botões laterais modernos */
         .stButton>button {
             width: 100%;
             background-color: #21262d !important;
@@ -92,33 +120,34 @@ st.markdown("""
             border-color: #58a6ff !important;
             color: #58a6ff !important;
         }
-        
-        /* BARRA DE MENSAGENS MINIMALISTA ADAPTADA PARA O MICROFONE */
+
+        /* 5. BARRA DE MENSAGENS MINIMALISTA FLUTUANTE */
         [data-testid="stChatInput"] {
             background-color: transparent !important;
             box-shadow: none !important;
             padding: 15px 0px !important;
-            position: relative;
         }
+        
         [data-testid="stChatInput"] textarea {
             color: #f0f6fc !important;
             background-color: #161b22 !important;
             border: 1px solid #30363d !important;
-            border-radius: 24px !important; /* Bordas arredondadas iguaizinhas à sua imagem */
-            padding-right: 85px !important; /* Espaço para o microfone e botão de enviar */
-            padding-left: 20px !important;
+            border-radius: 6px !important;
         }
         [data-testid="stChatInput"] textarea:focus {
             border-color: #58a6ff !important;
         }
+        
         [data-testid="stChatInput"] textarea::placeholder {
-            color: #8b949e !important;
+            color: #484f58 !important;
         }
+        
         [data-testid="stChatInput"] button {
             background-color: transparent !important;
             color: #58a6ff !important;
-            right: 15px !important;
         }
+
+        /* Ajuste do uploader para ficar compacto */
         .stFileUploader section {
             padding: 0.5rem 1rem !important;
             background-color: #161b22 !important;
@@ -140,7 +169,7 @@ REGRAS DE OPERAÇÃO:
 2. **Estrutura da Resposta**: Você OBRIGATORIAMENTE deve usar estes quatro títulos exatos, com os respectivos emojis, para estruturar sua resposta:
    * **🚨 Visão Estratégica / Análise de Risco**: Comece contextualizando o impacto do problema para o negócio ou arquitetura geral.
    * **🛠️ Planos de Ação / Mitigação**: Forneça diretrizes práticas, comandos técnicos, códigos defensivos ou políticas de segurança recomendadas. Conclua e feche todas as listas que abrir, nunca deixe tópicos numerados vazios ou incompletos no final da resposta.
-   * **🔍 Justificativa Técnico-Estratégica**: Descreva detalhadamente a lógica por trás della solução sugerida, abordando riscos como roubo de sessão (Session Hijacking), vazamentos, malwares ou engenharia social, explicando o porquê de a solução mitigar o risco com eficácia.
+   * **🔍 Justificativa Técnico-Estratégica**: Descreva detalhadamente a lógica por trás da solução sugerida, abordando riscos como roubo de sessão (Session Hijacking), vazamentos, malwares ou engenharia social, explicando o porquê de a solução mitigar o risco com eficácia.
    * **📚 Referências**: Inclua uma lista de frameworks, normas ou guias de governança internacional relevantes para o caso (como diretrizes do NIST, ISO/IEC 27001, COBIT, OWASP ou MITRE ATT&CK).
 3. **Ética**: Nunca forneça metodologias ofensivas para invasão ou destruição de ativos de forma ilegal. O foco deve ser estritamente defensivo, preventivo e corporativo.
 """
@@ -179,6 +208,56 @@ with st.sidebar:
         ["gemini-2.5-flash", "gemini-2.5-pro"]
     )
     
+    # 🎤 RECURSO PROFESSIONAL 1: DITADO POR VOZ INTEGRADO NA SIDEBAR
+    st.markdown("**🎙️ Transcrever Fala (Voz para Texto)**")
+    componente_ditado_html = """
+    <button id="start-record-btn" style="width:100%; padding:10px; background-color:#21262d; color:#c9d1d9; border:1px solid #30363d; border-radius:6px; cursor:pointer; font-weight:600;">
+        🎙️ Ativar Microfone
+    </button>
+    <p id="status-voz" style="color:#8b949e; font-size:12px; text-align:center; margin-top:5px; font-family:sans-serif;">Pronto para escutar...</p>
+    
+    <script>
+        const btn = document.getElementById('start-record-btn');
+        const status = document.getElementById('status-voz');
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'pt-BR';
+            
+            btn.addEventListener('click', () => {
+                recognition.start();
+                status.innerText = "🎙️ Escutando fala...";
+                status.style.color = "#58a6ff";
+                btn.style.borderColor = "#58a6ff";
+            });
+            
+            recognition.onresult = (event) => {
+                const textResult = event.results[0][0].transcript;
+                status.innerText = "Inserido com sucesso!";
+                status.style.color = "#238636";
+                btn.style.borderColor = "#30363d";
+                
+                const chatInput = window.parent.document.querySelector('[data-testid="stChatInput"] textarea');
+                if (chatInput) {
+                    chatInput.value = textResult;
+                chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+            };
+            
+            recognition.onerror = () => {
+                status.innerText = "Erro ao capturar microfone.";
+                status.style.color = "#f85149";
+                btn.style.borderColor = "#30363d";
+            };
+            recognition.onspeechend = () => { recognition.stop(); };
+        } else {
+            status.innerText = "Recurso indisponível neste navegador.";
+            btn.disabled = true;
+        }
+    </script>
+    """
+    components.html(componente_ditado_html, height=80)
+    
     st.markdown("---")
     st.markdown("**📂 Análise de Logs ou Matriz de Risco**")
     arquivo_carregado = st.file_uploader("Upload de Arquivos", type=["csv", "xlsx", "txt", "log"])
@@ -211,22 +290,17 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# 1. ESTA LINHA DEVE VIR ANTES DE TUDO: Captura o texto do chat
-if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
-    
-    # 2. Aqui a variável é criada corretamente
+# Entrada de novas mensagens
+if prompt_usuario := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
     prompt_higienizado = higienizar_contexto(prompt_usuario)
     
-    # Exibe a mensagem do usuário na tela
     with st.chat_message("user"):
         st.markdown(prompt_higienizado)
     st.session_state.messages.append({"role": "user", "content": prompt_higienizado})
     
-    # Abre o container do assistente
     with st.chat_message("assistant"):
         placeholder_resposta = st.empty()
         
-        # Reconstrói o histórico
         historico_contents = []
         for msg in st.session_state.messages[:-1]:
             historico_contents.append(
@@ -236,12 +310,10 @@ if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
                 )
             )
             
-        # 3. AGORA SIM: Usa a variável 'prompt_higienizado' com segurança (Identado dentro do IF)
         input_final = prompt_higienizado
-        
         if contexto_arquivo:
             input_final += f"\n\nAnalise também as informações contidas no seguinte arquivo corporativo:\n{contexto_arquivo}"
-        
+            
         historico_contents.append(
             types.Content(role="user", parts=[types.Part.from_text(text=input_final)])
         )
@@ -254,7 +326,7 @@ if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
         
         if modelo_selecionado == "gemini-2.5-pro":
             configuracao_ia.thinking_config = types.ThinkingConfig(thinking_budget=1024)
-        
+
         try:
             resposta_stream = client.models.generate_content_stream(
                 model=modelo_selecionado,
@@ -270,7 +342,7 @@ if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
             placeholder_resposta.markdown(resposta_completa)
             st.session_state.messages.append({"role": "assistant", "content": resposta_completa})
             
-            # 🔊 TEXTO PARA VOZ (FALA DA IA)
+            # 🔊 RECURSO PROFESSIONAL 2: TEXTO PARA VOZ (FALA DA IA)
             texto_limpo = re.sub(r'[*#`_\-🚨🛠️🔍📚]', '', resposta_completa).replace('"', '\\"').replace('\n', ' ')
             
             componente_audio_html = f"""
@@ -279,7 +351,7 @@ if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
                     window.speechSynthesis.cancel();
                     const msg = new SpeechSynthesisUtterance("{texto_limpo}");
                     msg.lang = "pt-BR";
-                    msg.rate = 1.1;
+                    msg.rate = 1.1; // Ritmo ágil corporativo
                     window.speechSynthesis.speak(msg);
                 }}
             </script>
@@ -288,75 +360,6 @@ if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
             
         except Exception as e:
             st.error(f"Falha na comunicação com o motor do HY-AI: {e}")
-
-
-# 🎙️ EMBUTIDOR DO MICROFONE DENTRO DA CAIXA DE CHAT (Injeção de Elemento UI)
-componente_microfone_embutido = """
-<script>
-    function injetarMicrofone() {
-        // Encontra o container de input do chat do Streamlit na janela principal
-        const chatContainer = window.parent.document.querySelector('[data-testid="stChatInput"]');
-        const textarea = window.parent.document.querySelector('[data-testid="stChatInput"] textarea');
-        
-        if (chatContainer && textarea && !window.parent.document.getElementById('mic-embutido-btn')) {
-            // Cria o botão do microfone estilizado e posicionado exatamente dentro da caixa
-            const micBtn = window.parent.document.createElement('button');
-            micBtn.id = 'mic-embutido-btn';
-            micBtn.innerHTML = '🎤';
-            micBtn.style.position = 'absolute';
-            micBtn.style.right = '55px'; /* Fica ao lado esquerdo do botão nativo de enviar */
-            micBtn.style.top = '50%';
-            micBtn.style.transform = 'translateY(-50%)';
-            micBtn.style.background = 'none';
-            micBtn.style.border = 'none';
-            micBtn.style.fontSize = '18px';
-            micBtn.style.cursor = 'pointer';
-            micBtn.style.zIndex = '999';
-            micBtn.title = 'Ditado por voz';
-            
-            // Configura o reconhecimento de voz nativo do navegador
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'pt-BR';
-                
-                micBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    recognition.start();
-                    micBtn.innerHTML = '🛑';
-                    textarea.placeholder = "Escutando... fale agora.";
-                });
-                
-                recognition.onresult = (event) => {
-                    const textoDitado = event.results[0][0].transcript;
-                    textarea.value = textoDitado;
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                    micBtn.innerHTML = '🎤';
-                    textarea.placeholder = "Pergunte o que quiser...";
-                };
-                
-                recognition.onerror = () => {
-                    micBtn.innerHTML = '🎤';
-                    textarea.placeholder = "Erro ao escutar. Tente de novo.";
-                };
-                
-                recognition.onspeechend = () => {
-                    recognition.stop();
-                    micBtn.innerHTML = '🎤';
-                };
-            } else {
-                micBtn.style.display = 'none';
-            }
-            
-            chatContainer.appendChild(micBtn);
-        }
-    }
-    // Roda repetidamente para garantir a persistência caso o Streamlit recarregue a UI
-    setInterval(injetarMicrofone, 1000);
-</script>
-"""
-components.html(componente_microfone_embutido, height=0, width=0)
-
 
 # ---- EXPORTAÇÃO DE RELATÓRIOS ----
 if st.session_state.messages:
