@@ -266,7 +266,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-   import os
+import os
 import io
 import re
 import streamlit as st
