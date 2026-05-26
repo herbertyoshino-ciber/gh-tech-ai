@@ -744,74 +744,70 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                     st.error(f"Erro na renderização da interface: {e_interface}")
 
 # Rodapé
+# ==============================================================================
+# FIM DO ARQUIVO: COPIE DAQUI ATÉ O FINAL E SUBSTITUA O SEU BLOCO DE RODAPÉ ANTIGO
+# ==============================================================================
+
+# 1. RENDERIZAÇÃO DO RODAPÉ E INJEÇÃO DO MICROFONE EM UM ÚNICO COMPONENTE ISOLADO
 st.markdown(
     """
     <div style="text-align: center; color: #8b949e; font-size: 12px; margin-top: 50px;">
         <hr style="border-color: #21262d;">
         <p>🔒 HY Risk Intelligence (HY RI-AI) — Mapeamento estratégico e blindagem de ativos. Todos os direitos reservados.</p>
     </div>
+    
+    <script>
+        function injetarMicrofone() {
+            const doc = window.parent.document;
+            const chatContainer = doc.querySelector('[data-testid="stChatInput"]');
+            const textarea = doc.querySelector('[data-testid="stChatInput"] textarea');
+            
+            if (chatContainer && textarea && !doc.getElementById('mic-embutido-btn')) {
+                const micBtn = doc.createElement('button');
+                micBtn.id = 'mic-embutido-btn';
+                micBtn.innerHTML = '🎤';
+                micBtn.style.position = 'absolute';
+                micBtn.style.right = '45px';
+                micBtn.style.top = '50%';
+                micBtn.style.transform = 'translateY(-50%)';
+                micBtn.style.background = 'none';
+                micBtn.style.border = 'none';
+                micBtn.style.fontSize = '16px';
+                micBtn.style.cursor = 'pointer';
+                micBtn.style.zIndex = '999';
+                micBtn.title = 'Ditado por voz';
+                
+                textarea.style.paddingRight = '75px';
+                
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    const recognition = new SpeechRecognition();
+                    recognition.lang = 'pt-BR';
+                    
+                    micBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        recognition.start();
+                        micBtn.innerHTML = '🛑';
+                    });
+                    
+                    recognition.onresult = (event) => {
+                        const textoDitado = event.results[0][0].transcript;
+                        textarea.value = textoDitado;
+                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                        micBtn.innerHTML = '🎤';
+                    };
+                    
+                    recognition.onerror = () => { micBtn.innerHTML = '🎤'; };
+                    recognition.onspeechend = () => { recognition.stop(); micBtn.innerHTML = '🎤'; };
+                } else {
+                    micBtn.style.display = 'none';
+                }
+                chatContainer.appendChild(micBtn);
+            }
+        }
+        setInterval(injetarMicrofone, 1000);
+    </script>
     """,
     unsafe_allow_html=True
 )
-
-
-# ⬇️ COLE ESTE BLOCO NA ÚLTIMA LINHA DO SEU ARQUIVO (0 ESPAÇOS DE RECUO) ⬇️
-componente_microfone_embutido = """
-<script>
-    function injetarMicrofone() {
-        const doc = window.parent.document;
-        const chatContainer = doc.querySelector('[data-testid="stChatInput"]');
-        const textarea = doc.querySelector('[data-testid="stChatInput"] textarea');
-        
-        if (chatContainer && textarea && !doc.getElementById('mic-embutido-btn')) {
-            const micBtn = doc.createElement('button');
-            micBtn.id = 'mic-embutido-btn';
-            micBtn.innerHTML = '🎤';
-            micBtn.style.position = 'absolute';
-            micBtn.style.right = '45px';
-            micBtn.style.top = '50%';
-            micBtn.style.transform = 'translateY(-50%)';
-            micBtn.style.background = 'none';
-            micBtn.style.border = 'none';
-            micBtn.style.fontSize = '16px';
-            micBtn.style.cursor = 'pointer';
-            micBtn.style.zIndex = '999';
-            micBtn.title = 'Ditado por voz';
-            
-            textarea.style.paddingRight = '75px';
-            
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (SpeechRecognition) {
-                const recognition = new SpeechRecognition();
-                recognition.lang = 'pt-BR';
-                
-                micBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    recognition.start();
-                    micBtn.innerHTML = '🛑';
-                });
-                
-                recognition.onresult = (event) => {
-                    const textoDitado = event.results[0][0].transcript;
-                    textarea.value = textoDitado;
-                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                    micBtn.innerHTML = '🎤';
-                };
-                
-                recognition.onerror = () => { micBtn.innerHTML = '🎤'; };
-                recognition.onspeechend = () => { recognition.stop(); micBtn.innerHTML = '🎤'; };
-            } else {
-                micBtn.style.display = 'none';
-            }
-            chatContainer.appendChild(micBtn);
-        }
-    }
-    setInterval(injetarMicrofone, 1000);
-</script>
-"""
-components.html(componente_microfone_embutido, height=0, width=0)
-# ⬆️ FIM REAL DO SEU ARQUIVO DE CÓDIGO ⬆️
-
-     
-                
