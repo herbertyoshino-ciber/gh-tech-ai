@@ -723,11 +723,12 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                         st.error(f"Erro técnico no core da IA: {e_principal}")
                         st.stop()
 
-                try:
+                   try:
                     st.markdown(ai_resposta)
                     st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
                     st.toast("Análise de riscos concluída!", icon="🛡️")
-                    st.rerun()
+                    
+                    # 🔊 TEXTO PARA VOZ (FALA DA IA)
                     texto_limpo = re.sub(r'[*#`_\-🚨🛠️🔍📚]', '', ai_resposta).replace('"', '\\"').replace('\n', ' ')
                     componente_audio_html = f"""
                     <script>
@@ -740,15 +741,15 @@ if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre se
                         }}
                     </script>
                     """
+                    components.html(componente_audio_html, height=0, width=0)
+                    
+                    st.rerun()
                 except Exception as e_interface:
                     st.error(f"Erro na renderização da interface: {e_interface}")
 
-# Rodapé
-# ==============================================================================
-# FIM DO ARQUIVO: COPIE DAQUI ATÉ O FINAL E SUBSTITUA O SEU BLOCO DE RODAPÉ ANTIGO
-# ==============================================================================
+# ⬇️ CERTIFIQUE-SE DE QUE ESTA PARTE ABAIXO ESTÁ TOTALMENTE ENCOSTADA À ESQUERDA (0 ESPAÇOS) ⬇️
 
-# 1. RENDERIZAÇÃO DO RODAPÉ E INJEÇÃO DO MICROFONE EM UM ÚNICO COMPONENTE ISOLADO
+# Rodapé Corporativo e Injetor do Microfone Integrado
 st.markdown(
     """
     <div style="text-align: center; color: #8b949e; font-size: 12px; margin-top: 50px;">
@@ -792,6 +793,7 @@ st.markdown(
                     });
                     
                     recognition.onresult = (event) => {
+                        // Captura correta e universal do texto ditado no navegador
                         const textoDitado = event.results[0][0].transcript;
                         textarea.value = textoDitado;
                         textarea.dispatchEvent(new Event('input', { bubbles: true }));
