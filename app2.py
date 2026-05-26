@@ -211,18 +211,22 @@ for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-# Entrada de novas mensagens
+# 1. ESTA LINHA DEVE VIR ANTES DE TUDO: Captura o texto do chat
 if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
     
+    # 2. Aqui a variável é criada corretamente
     prompt_higienizado = higienizar_contexto(prompt_usuario)
     
+    # Exibe a mensagem do usuário na tela
     with st.chat_message("user"):
         st.markdown(prompt_higienizado)
     st.session_state.messages.append({"role": "user", "content": prompt_higienizado})
     
+    # Abre o container do assistente
     with st.chat_message("assistant"):
         placeholder_resposta = st.empty()
         
+        # Reconstrói o histórico
         historico_contents = []
         for msg in st.session_state.messages[:-1]:
             historico_contents.append(
@@ -231,58 +235,59 @@ if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
                     parts=[types.Part.from_text(text=msg["content"])]
                 )
             )
-            # ---- PROCESSAMENTO DO INPUT E RESPOSTA DO MOTOR DA IA ----
-input_final = prompt_higienizado
-
-if contexto_arquivo:
-    input_final += f"\n\nAnalise também as informações contidas no seguinte arquivo corporativo:\n{contexto_arquivo}"
-
-historico_contents.append(
-    types.Content(role="user", parts=[types.Part.from_text(text=input_final)])
-)
-
-configuracao_ia = types.GenerateContentConfig(
-    system_instruction=BASE_PROMPT,
-    temperature=0.2,
-    top_p=0.95
-)
-
-if modelo_selecionado == "gemini-2.5-pro":
-    configuracao_ia.thinking_config = types.ThinkingConfig(thinking_budget=1024)
-
-try:
-    resposta_stream = client.models.generate_content_stream(
-        model=modelo_selecionado,
-        contents=historico_contents,
-        config=configuracao_ia
-    )
-    
-    resposta_completa = ""
-    for fragmento in resposta_stream:
-        resposta_completa += fragmento.text
-        placeholder_resposta.markdown(resposta_completa + "▌")
+            
+        # 3. AGORA SIM: Usa a variável 'prompt_higienizado' com segurança (Identado dentro do IF)
+        input_final = prompt_higienizado
         
-    placeholder_resposta.markdown(resposta_completa)
-    st.session_state.messages.append({"role": "assistant", "content": resposta_completa})
-    
-    # 🔊 TEXTO PARA VOZ (FALA DA IA)
-    texto_limpo = re.sub(r'[*#`_\-🚨🛠️🔍📚]', '', resposta_completa).replace('"', '\\"').replace('\n', ' ')
-    
-    componente_audio_html = f"""
-    <script>
-        if ('speechSynthesis' in window) {{
-            window.speechSynthesis.cancel();
-            const msg = new SpeechSynthesisUtterance("{texto_limpo}");
-            msg.lang = "pt-BR";
-            msg.rate = 1.1;
-            window.speechSynthesis.speak(msg);
-        }}
-    </script>
-    """
-    components.html(componente_audio_html, height=0, width=0)
-    
-except Exception as e:
-    st.error(f"Falha na comunicação com o motor do HY-AI: {e}")
+        if contexto_arquivo:
+            input_final += f"\n\nAnalise também as informações contidas no seguinte arquivo corporativo:\n{contexto_arquivo}"
+        
+        historico_contents.append(
+            types.Content(role="user", parts=[types.Part.from_text(text=input_final)])
+        )
+        
+        configuracao_ia = types.GenerateContentConfig(
+            system_instruction=BASE_PROMPT,
+            temperature=0.2,
+            top_p=0.95
+        )
+        
+        if modelo_selecionado == "gemini-2.5-pro":
+            configuracao_ia.thinking_config = types.ThinkingConfig(thinking_budget=1024)
+        
+        try:
+            resposta_stream = client.models.generate_content_stream(
+                model=modelo_selecionado,
+                contents=historico_contents,
+                config=configuracao_ia
+            )
+            
+            resposta_completa = ""
+            for fragmento in resposta_stream:
+                resposta_completa += fragmento.text
+                placeholder_resposta.markdown(resposta_completa + "▌")
+                
+            placeholder_resposta.markdown(resposta_completa)
+            st.session_state.messages.append({"role": "assistant", "content": resposta_completa})
+            
+            # 🔊 TEXTO PARA VOZ (FALA DA IA)
+            texto_limpo = re.sub(r'[*#`_\-🚨🛠️🔍📚]', '', resposta_completa).replace('"', '\\"').replace('\n', ' ')
+            
+            componente_audio_html = f"""
+            <script>
+                if ('speechSynthesis' in window) {{
+                    window.speechSynthesis.cancel();
+                    const msg = new SpeechSynthesisUtterance("{texto_limpo}");
+                    msg.lang = "pt-BR";
+                    msg.rate = 1.1;
+                    window.speechSynthesis.speak(msg);
+                }}
+            </script>
+            """
+            components.html(componente_audio_html, height=0, width=0)
+            
+        except Exception as e:
+            st.error(f"Falha na comunicação com o motor do HY-AI: {e}")
 
 
 # 🎙️ EMBUTIDOR DO MICROFONE DENTRO DA CAIXA DE CHAT (Injeção de Elemento UI)
