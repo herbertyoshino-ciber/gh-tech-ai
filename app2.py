@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 from google import genai
 from google.genai import types
+import streamlit.components.v1 as components
 
 # CONFIGURAÇÃO DE PÁGINA BLINDADA
 st.set_page_config(
@@ -18,12 +19,9 @@ st.set_page_config(
 # ESTILIZAÇÃO CSS PREMIUM ADAPTADA E BLINDADA (DARK MODE)
 st.markdown("""
     <style>
-        /* FORÇADOR GLOBAL DE FUNDO ESCURO CORPORATIVO */
         .stApp, html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             background-color: #0d1117 !important;
         }
-        
-        /* 1. CAIXAS DE MENSAGEM DO CHAT (DARK INTEGRADO) */
         .stChatMessage {
             background-color: #161b22 !important; 
             border: 1px solid #30363d !important;  
@@ -32,64 +30,41 @@ st.markdown("""
             margin-bottom: 12px;
             box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
         }
-        
-        /* Força a cor correta do texto em todas as mensagens */
-        [data-testid="stChatMessageUser"] p,
-        [data-testid="stChatMessageUser"] div,
-        [data-testid="stChatMessageUser"] span,
-        [data-testid="stChatMessageAssistant"] p,
-        [data-testid="stChatMessageAssistant"] div,
-        [data-testid="stChatMessageAssistant"] span {
+        [data-testid="stChatMessageUser"] p, [data-testid="stChatMessageUser"] div, [data-testid="stChatMessageUser"] span,
+        [data-testid="stChatMessageAssistant"] p, [data-testid="stChatMessageAssistant"] div, [data-testid="stChatMessageAssistant"] span {
             color: #c9d1d9 !important; 
             font-size: 15px !important;
             line-height: 1.6 !important;
         }
-        
-        /* 2. PAINEL LATERAL (SIDEBAR) CONTÍNUO */
         [data-testid="stSidebar"] {
             background-color: #070a0e !important;
             border-right: 1px solid #30363d !important;
         }
-        
-        [data-testid="stSidebar"] p, 
-        [data-testid="stSidebar"] label, 
-        [data-testid="stSidebar"] span, 
-        [data-testid="stSidebar"] div,
-        [data-testid="stSidebar"] h1,
-        [data-testid="stSidebar"] h2,
-        [data-testid="stSidebar"] h3 {
+        [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span, [data-testid="stSidebar"] div,
+        [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3 {
             color: #f0f6fc !important;
         }
-        
         [data-testid="stSidebar"] .stMarkdown p {
             color: #8b949e !important;
             font-size: 13px !important;
         }
-
-        /* Ajuste fino para os textos do selectbox na sidebar ficarem brancos */
         [data-testid="stSidebar"] div[data-baseweb="select"] div {
             color: #ffffff !important;
         }
-        
-        /* 3. CENTRALIZAÇÃO E COR DOS TÍTULOS */
         h1, h2, h3, .stSubheader, [data-testid="stHeader"] {
             text-align: center !important;
             justify-content: center !important;
         }
-        
         h1, h2, h3 {
             color: #58a6ff !important; 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             font-weight: 600 !important;
         }
-        
         .stCaption {
             text-align: center !important;
             color: #8b949e !important;
             font-size: 14px !important;
         }
-        
-        /* 4. DESIGN DOS CARDS DE MÉTRICAS (KPIs) */
         [data-testid="stMetricValue"] {
             color: #58a6ff !important;
             font-size: 28px !important;
@@ -106,8 +81,6 @@ st.markdown("""
         [data-testid="stMetricDelta"] {
             justify-content: center !important;
         }
-        
-        /* Botões laterais modernos */
         .stButton>button {
             width: 100%;
             background-color: #21262d !important;
@@ -119,34 +92,33 @@ st.markdown("""
             border-color: #58a6ff !important;
             color: #58a6ff !important;
         }
-
-        /* 5. BARRA DE MENSAGENS MINIMALISTA FLUTUANTE */
+        
+        /* BARRA DE MENSAGENS MINIMALISTA ADAPTADA PARA O MICROFONE */
         [data-testid="stChatInput"] {
             background-color: transparent !important;
             box-shadow: none !important;
             padding: 15px 0px !important;
+            position: relative;
         }
-        
         [data-testid="stChatInput"] textarea {
             color: #f0f6fc !important;
             background-color: #161b22 !important;
             border: 1px solid #30363d !important;
-            border-radius: 6px !important;
+            border-radius: 24px !important; /* Bordas arredondadas iguaizinhas à sua imagem */
+            padding-right: 85px !important; /* Espaço para o microfone e botão de enviar */
+            padding-left: 20px !important;
         }
         [data-testid="stChatInput"] textarea:focus {
             border-color: #58a6ff !important;
         }
-        
         [data-testid="stChatInput"] textarea::placeholder {
-            color: #484f58 !important;
+            color: #8b949e !important;
         }
-        
         [data-testid="stChatInput"] button {
             background-color: transparent !important;
             color: #58a6ff !important;
+            right: 15px !important;
         }
-
-        /* Ajuste do uploader para ficar compacto */
         .stFileUploader section {
             padding: 0.5rem 1rem !important;
             background-color: #161b22 !important;
@@ -168,7 +140,7 @@ REGRAS DE OPERAÇÃO:
 2. **Estrutura da Resposta**: Você OBRIGATORIAMENTE deve usar estes quatro títulos exatos, com os respectivos emojis, para estruturar sua resposta:
    * **🚨 Visão Estratégica / Análise de Risco**: Comece contextualizando o impacto do problema para o negócio ou arquitetura geral.
    * **🛠️ Planos de Ação / Mitigação**: Forneça diretrizes práticas, comandos técnicos, códigos defensivos ou políticas de segurança recomendadas. Conclua e feche todas as listas que abrir, nunca deixe tópicos numerados vazios ou incompletos no final da resposta.
-   * **🔍 Justificativa Técnico-Estratégica**: Descreva detalhadamente a lógica por trás da solução sugerida, abordando riscos como roubo de sessão (Session Hijacking), vazamentos, malwares ou engenharia social, explicando o porquê de a solução mitigar o risco com eficácia.
+   * **🔍 Justificativa Técnico-Estratégica**: Descreva detalhadamente a lógica por trás della solução sugerida, abordando riscos como roubo de sessão (Session Hijacking), vazamentos, malwares ou engenharia social, explicando o porquê de a solução mitigar o risco com eficácia.
    * **📚 Referências**: Inclua uma lista de frameworks, normas ou guias de governança internacional relevantes para o caso (como diretrizes do NIST, ISO/IEC 27001, COBIT, OWASP ou MITRE ATT&CK).
 3. **Ética**: Nunca forneça metodologias ofensivas para invasão ou destruição de ativos de forma ilegal. O foco deve ser estritamente defensivo, preventivo e corporativo.
 """
@@ -180,268 +152,227 @@ def higienizar_contexto(texto):
     texto = re.sub(r'\b\d{3}\.\d{3}\.\d{3}-\d{2}\b', '[CPF_REDACTED]', texto)
     return texto
 
-# Inicializa as variáveis no session_state do Streamlit
+# Inicialização do Cliente GenAI
+@st.cache_resource
+def get_ai_client():
+    api_key = st.secrets.get("GEMINI_API_KEY", os.environ.get("GEMINI_API_KEY"))
+    if not api_key:
+        st.error("Chave de API do Gemini não encontrada!")
+        st.stop()
+    return genai.Client(api_key=api_key)
+
+client = get_ai_client()
+
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# Função para gerar um relatório em PDF/Texto formatado
-def gerar_relatorio_estrategico(historico):
-    pdf_buffer = io.BytesIO()
-    conteudo = "==================================================\n"
-    conteudo += "       HY RISK INTELLIGENCE - REPORT (RI-AI)       \n"
-    conteudo += "    Mapeamento estratégico e blindagem de ativos  \n"
-    conteudo += "==================================================\n\n"
-    
-    for idx, msg in enumerate(historico, 1):
-        autor = "USUÁRIO" if msg["role"] == "user" else "HY-AI"
-        conteudo += f"[{idx}] {autor}:\n"
-        conteudo += f"{msg['content']}\n"
-        conteudo += "-" * 50 + "\n\n"
-        
-    conteudo += "==================================================\n"
-    conteudo += "Fim do relatório. HY Risk Intelligence - Proteção e Negócio.\n"
-    
-    pdf_buffer.write(conteudo.encode('utf-8'))
-    pdf_buffer.seek(0)
-    return pdf_buffer
+# Cabeçalho da Aplicação
+st.title("🛡️ HY RISK INTELLIGENCE")
+st.caption("Suíte Estratégica de Governança e Resposta a Incidentes de Cibersegurança")
 
-# CARREGAMENTO SILENCIOSO DA CHAVE (SECRETS)
-gemini_api_key = st.secrets.get("GEMINI_API_KEY", "")
-
-# Inicializa a variável do arquivo no session state para evitar NameError
-if "arquivo_log_dados" not in st.session_state:
-    st.session_state.arquivo_log_dados = None
-
-# Painel Lateral (Sidebar)
+# ---- SIDEBAR DE OPERAÇÃO ----
 with st.sidebar:
-    st.markdown("<h1 style='text-align: center; color: #58a6ff !important;'>🛡️ HY-AI</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='text-align: center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
-    st.markdown("---")
+    st.subheader("⚙️ Painel de Controle")
     
-    st.markdown("### 🔍 Escopo de Análise")
-    categoria = st.selectbox(
-        "Selecione o foco do problema:",
-        [
-            "Geral / Sem Filtro", 
-            "Análise de Logs e Incidentes",
-            "Governança Corporativa e Riscos (GRC)",
-            "Gestão de Incidentes e Continuidade (BCP/DRP)",
-            "Segurança em Aplicações Web (OWASP)", 
-            "Criptografia e Proteção de Dados", 
-            "Segurança de Redes e Firewalls", 
-            "Conformidade e Privacidade (LGPD/GDPR)",
-            "Pentest e Defesa Ativa (Blue/Red Team)"
-        ]
+    modelo_selecionado = st.selectbox(
+        "Selecione o Motor de IA:",
+        ["gemini-2.5-flash", "gemini-2.5-pro"]
     )
     
     st.markdown("---")
+    st.markdown("**📂 Análise de Logs ou Matriz de Risco**")
+    arquivo_carregado = st.file_uploader("Upload de Arquivos", type=["csv", "xlsx", "txt", "log"])
     
-    if st.session_state.messages:
-        st.markdown("### 📄 Exportar Dados")
-        dados_pdf = gerar_relatorio_estrategico(st.session_state.messages)
-        st.download_button(
-            label="📥 Baixar Relatório Estratégico (.pdf)",
-            data=dados_pdf,
-            file_name="relatorio_hy_risk_intelligence.pdf",
-            mime="application/pdf",
-            key="download_pdf_btn"
-        )
-        st.markdown("---")
-    
-    if st.button("🗑️ Limpar Histórico do Terminal", type="secondary"):
+    contexto_arquivo = ""
+    if arquivo_carregado is not None:
+        try:
+            if arquivo_carregado.name.endswith(".csv"):
+                df = pd.read_csv(arquivo_carregado)
+                contexto_arquivo = f"\n[Dados do Arquivo {arquivo_carregado.name}]:\n" + df.head(50).to_string()
+                st.success("CSV anexado.")
+            elif arquivo_carregado.name.endswith(".xlsx"):
+                df = pd.read_excel(arquivo_carregado)
+                contexto_arquivo = f"\n[Dados do Arquivo {arquivo_carregado.name}]:\n" + df.head(50).to_string()
+                st.success("Excel anexado.")
+            else:
+                stringio = io.StringIO(arquivo_carregado.getvalue().decode("utf-8"))
+                contexto_arquivo = f"\n[Conteúdo do Log {arquivo_carregado.name}]:\n" + stringio.read()[:5000]
+                st.success("Log indexado.")
+        except Exception as e:
+            st.error(f"Erro ao processar arquivo: {e}")
+
+    st.markdown("---")
+    if st.button("🗑️ Limpar Sessão Atual"):
         st.session_state.messages = []
-        st.session_state.arquivo_log_dados = None
         st.rerun()
 
-# --- FIM DO BLOCO DA SIDEBAR ---
+# ---- ÁREA DE DIÁLOGO (CHAT) ----
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-# Título principal da interface
-st.markdown("<h1>🛡️ HY-AI <span style='font-size: 18px; color: #8b949e;'>v5.0</span></h1>", unsafe_allow_html=True)
-st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
-
-# 📊 PAINEL DE INDICADORES EXECUTIVOS (KPIs)
-col1, col2, col3, col4 = st.columns(4)
-with col1:
-    st.metric(label="Análises Efetuadas", value=len([m for m in st.session_state.messages if m["role"] == "user"]), delta="SOC Ativo")
-with col2:
-    st.metric(label="Controles de GRC", value="NIST / ISO", delta="Mapeados")
-with col3:
-    st.metric(label="Status de Conformidade", value="98.4%", delta="+1.2% este mês")
-with col4:
-    st.metric(label="Nível de Resiliência", value="Alta", delta="Foco Preventivo")
-
-st.markdown("---")
-
-# 📊 DASHBOARD GRÁFICO DE VETORES DE RISCO (PLOTLY) E GUIA DE CONSULTA
-col_chart, col_faq = st.columns([2, 1])
-
-with col_chart:
-    # Dados de modelagem para o gráfico de radar corporativo
-    dados_radar = pd.DataFrame(dict(
-        r=[4, 5, 3, 4, 5],
-        theta=['Conformidade', 'Segurança de Dados', 'Gestão de Crise', 'Arquitetura de Redes', 'Resposta a Incidentes']
-    ))
+# Entrada de novas mensagens
+if prompt_usuario := st.chat_input("Pergunte o que quiser..."):
     
-    fig = px.line_polar(
-        dados_radar, 
-        r='r', 
-        theta='theta', 
-        line_close=True, 
-        range_r=[0, 5], 
-        title="🛡️ Índice de Maturidade de Risco Operacional"
-    )
-    fig.update_traces(fill='toself', line_color='#58a6ff')
-    fig.update_layout(
-        template="plotly_dark",
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
-        margin=dict(l=20, r=20, t=40, b=20),
-        height=320
-    )
-    st.plotly_chart(fig, use_container_width=True)
-
-with col_faq:
-    # Título da seção de consulta rápida
-    st.markdown("<p style='font-weight:bold; color:#58a6ff; margin-bottom:5px;'>🔍 Guia Rápido de Governança</p>", unsafe_allow_html=True)
+    prompt_higienizado = higienizar_contexto(prompt_usuario)
     
-    # 🚨 LINHAS CORRIGIDAS: Mudado de st.accordion para st.expander (O componente correto do Streamlit)
-    with st.expander("🚨 Prazo Notificação ANPD"):
-        st.write("Sob a ótica da LGPD, incidentes graves que envolvam dados pessoais devem ser comunicados à ANPD e aos titulares em prazo razoável (geralmente interpretado pelo mercado como até 2 dias úteis).")
+    with st.chat_message("user"):
+        st.markdown(prompt_higienizado)
+    st.session_state.messages.append({"role": "user", "content": prompt_higienizado})
+    
+    with st.chat_message("assistant"):
+        placeholder_resposta = st.empty()
         
-    with st.expander("🛠️ O que compõe RTO e RPO?"):
-        st.write("RTO (Recovery Time Objective) é o tempo máximo tolerável para restabelecer um sistema após uma falha. RPO (Recovery Point Objective) define a quantidade máxima de dados tolerada para perda.")
+        historico_contents = []
+        for msg in st.session_state.messages[:-1]:
+            historico_contents.append(
+                types.Content(
+                    role="user" if msg["role"] == "user" else "model",
+                    parts=[types.Part.from_text(text=msg["content"])]
+                )
+            )
+            # ---- PROCESSAMENTO DO INPUT E RESPOSTA DO MOTOR DA IA ----
+input_final = prompt_higienizado
 
-st.markdown("---")
+if contexto_arquivo:
+    input_final += f"\n\nAnalise também as informações contidas no seguinte arquivo corporativo:\n{contexto_arquivo}"
 
-# CONTAINER DE HISTÓRICO DO CHAT
-chat_container = st.container()
-
-with chat_container:
-    for index, message in enumerate(st.session_state.messages):
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
-            if message["role"] == "assistant":
-                st.feedback("thumbs", key=f"fb_{index}")
-
-client = None
-
-# Inicialização do cliente Google GenAI
-if gemini_api_key:
-    try:
-        client = genai.Client(api_key=gemini_api_key)
-    except Exception as e:
-        st.error(f"Falha técnica na inicialização da chave secreta: {e}")
-        st.stop()
-else:
-    st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud.")
-    st.stop()
-
-# --- ÁREA DE INPUT DISCRETA NO FINAL ---
-st.markdown("<br><br>", unsafe_allow_html=True)
-
-arquivo_log = st.file_uploader(
-    "Discreto", 
-    type=["txt", "log"],
-    label_visibility="collapsed"
+historico_contents.append(
+    types.Content(role="user", parts=[types.Part.from_text(text=input_final)])
 )
 
-if arquivo_log:
-    st.session_state.arquivo_log_dados = arquivo_log
-    st.markdown(f"<p style='color:#58a6ff; font-size:12px; margin-top:-10px; margin-bottom:10px;'>📎 Arquivo carregado: <b>{arquivo_log.name}</b></p>", unsafe_allow_html=True)
+configuracao_ia = types.GenerateContentConfig(
+    system_instruction=BASE_PROMPT,
+    temperature=0.2,
+    top_p=0.95
+)
 
-# Fluxo principal do chat
-if prompt := st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança..."):
-    if st.session_state.arquivo_log_dados:
-        conteudo_puro = st.session_state.arquivo_log_dados.read().decode("utf-8")
-        conteudo_higienizado = higienizar_contexto(conteudo_puro)
-        prompt_completo = f"CONTEXTO DO LOG ENVIADO (HIGIENIZADO):\n```\n{conteudo_higienizado}\n```\n\nPERGUNTA DO USUÁRIO:\n{prompt}"
-    else:
-        prompt_completo = prompt
+if modelo_selecionado == "gemini-2.5-pro":
+    configuracao_ia.thinking_config = types.ThinkingConfig(thinking_budget=1024)
 
-    st.session_state.messages.append({"role": "user", "content": prompt})
+try:
+    resposta_stream = client.models.generate_content_stream(
+        model=modelo_selecionado,
+        contents=historico_contents,
+        config=configuracao_ia
+    )
     
-    with chat_container:
-        with st.chat_message("user"):
-            st.markdown(prompt)
+    resposta_completa = ""
+    for fragmento in resposta_stream:
+        resposta_completa += fragmento.text
+        placeholder_resposta.markdown(resposta_completa + "▌")
         
-    # 🚨 ESSAS LINHAS ABAIXO PRECISAM ESTAR AQUI PARA DEFINIR O HISTÓRICO:
-    history_contents = []
-    for msg in st.session_state.messages[:-1]:
-        role_mapping = "model" if msg["role"] == "assistant" else "user"
-        history_contents.append(
-            types.Content(role=role_mapping, parts=[types.Part.from_text(text=msg["content"])]))
-    history_contents.append(
-        types.Content(role="user", parts=[types.Part.from_text(text=prompt_completo)]))
-        
-    # Bloco de geração de resposta com o Fallback ativo
-    with chat_container:
-        with st.chat_message("assistant"):
-            with st.spinner("🕵️‍♂️ Analisando vetores de risco e gerando resposta corporativa..."):
-                try:
-                    contexto_categoria = f"\nO usuário selecionou a categoria específica: [{categoria}]. Conecte sua análise técnica estrategicamente a este escopo de inteligência de riscos corporativos."
-                    prompt_final = BASE_PROMPT + contexto_categoria
-                    
-                    # Tentativa 1: Modelo Principal (2.0)
-                    config = types.GenerateContentConfig(
-                        system_instruction=prompt_final,
-                        temperature=0.3,
-                        max_output_tokens=4096 
-                    )
-                    
-                    response = client.models.generate_content(
-                        model='gemini-2.5-flash',
-                        contents=history_contents,
-                        config=config
-                    )
-                    ai_resposta = response.text
-
-                except Exception as e_principal:
-                    # Se o modelo 2.5 estourar a cota (Erro 429), tenta o modelo 2.0 automaticamente
-                    if "429" in str(e_principal) or "RESOURCE_EXHAUSTED" in str(e_principal):
-                        try:
-                            config = types.GenerateContentConfig(
-                                system_instruction=prompt_final,
-                                temperature=0.3,
-                                max_output_tokens=4096 
-                            )
-                            response = client.models.generate_content(
-                                model='gemini-2.0-flash',
-                                contents=history_contents,
-                                config=config
-                            )
-                            ai_resposta = response.text
-                        except Exception as e_fallback:
-                            st.warning("""
-                                ⏳ **Fila de Espera GRC Ativa**
-                                
-                                O volume de requisições simultâneas excedeu a cota diária global do servidor do Google. 
-                                Por favor, **Tente Novamente mais tarde!! ** e clique em enviar novamente para reprocessar o terminal.
-                            """)
-                            st.stop()
-                    else:
-                        st.error(f"Erro técnico no core da IA: {e_principal}")
-                        st.stop()
-
-                try:
-                    st.markdown(ai_resposta)
-                    st.session_state.messages.append({"role": "assistant", "content": ai_resposta})
-                    st.toast("Análise de riscos concluída!", icon="🛡️")
-                    st.rerun()
-                except Exception as e_interface:
-                    st.error(f"Erro na renderização da interface: {e_interface}")
-
-# Rodapé
-st.markdown(
+    placeholder_resposta.markdown(resposta_completa)
+    st.session_state.messages.append({"role": "assistant", "content": resposta_completa})
+    
+    # 🔊 TEXTO PARA VOZ (FALA DA IA)
+    texto_limpo = re.sub(r'[*#`_\-🚨🛠️🔍📚]', '', resposta_completa).replace('"', '\\"').replace('\n', ' ')
+    
+    componente_audio_html = f"""
+    <script>
+        if ('speechSynthesis' in window) {{
+            window.speechSynthesis.cancel();
+            const msg = new SpeechSynthesisUtterance("{texto_limpo}");
+            msg.lang = "pt-BR";
+            msg.rate = 1.1;
+            window.speechSynthesis.speak(msg);
+        }}
+    </script>
     """
-    <div style="text-align: center; color: #8b949e; font-size: 12px; margin-top: 50px;">
-        <hr style="border-color: #21262d;">
-        <p>🔒 HY Risk Intelligence (HY RI-AI) — Mapeamento estratégico e blindagem de ativos. Todos os direitos reservados.</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+    components.html(componente_audio_html, height=0, width=0)
+    
+except Exception as e:
+    st.error(f"Falha na comunicação com o motor do HY-AI: {e}")
 
-       
 
-     
+# 🎙️ EMBUTIDOR DO MICROFONE DENTRO DA CAIXA DE CHAT (Injeção de Elemento UI)
+componente_microfone_embutido = """
+<script>
+    function injetarMicrofone() {
+        // Encontra o container de input do chat do Streamlit na janela principal
+        const chatContainer = window.parent.document.querySelector('[data-testid="stChatInput"]');
+        const textarea = window.parent.document.querySelector('[data-testid="stChatInput"] textarea');
+        
+        if (chatContainer && textarea && !window.parent.document.getElementById('mic-embutido-btn')) {
+            // Cria o botão do microfone estilizado e posicionado exatamente dentro da caixa
+            const micBtn = window.parent.document.createElement('button');
+            micBtn.id = 'mic-embutido-btn';
+            micBtn.innerHTML = '🎤';
+            micBtn.style.position = 'absolute';
+            micBtn.style.right = '55px'; /* Fica ao lado esquerdo do botão nativo de enviar */
+            micBtn.style.top = '50%';
+            micBtn.style.transform = 'translateY(-50%)';
+            micBtn.style.background = 'none';
+            micBtn.style.border = 'none';
+            micBtn.style.fontSize = '18px';
+            micBtn.style.cursor = 'pointer';
+            micBtn.style.zIndex = '999';
+            micBtn.title = 'Ditado por voz';
+            
+            // Configura o reconhecimento de voz nativo do navegador
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (SpeechRecognition) {
+                const recognition = new SpeechRecognition();
+                recognition.lang = 'pt-BR';
                 
+                micBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    recognition.start();
+                    micBtn.innerHTML = '🛑';
+                    textarea.placeholder = "Escutando... fale agora.";
+                });
+                
+                recognition.onresult = (event) => {
+                    const textoDitado = event.results[0][0].transcript;
+                    textarea.value = textoDitado;
+                    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                    micBtn.innerHTML = '🎤';
+                    textarea.placeholder = "Pergunte o que quiser...";
+                };
+                
+                recognition.onerror = () => {
+                    micBtn.innerHTML = '🎤';
+                    textarea.placeholder = "Erro ao escutar. Tente de novo.";
+                };
+                
+                recognition.onspeechend = () => {
+                    recognition.stop();
+                    micBtn.innerHTML = '🎤';
+                };
+            } else {
+                micBtn.style.display = 'none';
+            }
+            
+            chatContainer.appendChild(micBtn);
+        }
+    }
+    // Roda repetidamente para garantir a persistência caso o Streamlit recarregue a UI
+    setInterval(injetarMicrofone, 1000);
+</script>
+"""
+components.html(componente_microfone_embutido, height=0, width=0)
+
+
+# ---- EXPORTAÇÃO DE RELATÓRIOS ----
+if st.session_state.messages:
+    st.markdown("---")
+    buffer_relatorio = io.BytesIO()
+    conteudo_texto = "==================================================\n"
+    conteudo_texto += "       HY RISK INTELLIGENCE - REPORT (RI-AI)       \n"
+    conteudo_texto += "    Mapeamento estrategico e blindagem de ativos  \n"
+    conteudo_texto += "==================================================\n\n"
+    
+    for idx, msg in enumerate(st.session_state.messages, 1):
+        autor = "USUARIO" if msg["role"] == "user" else "HY-AI"
+        conteudo_texto += f"[{idx}] {autor}:\n{msg['content']}\n"
+        conteudo_texto += "-"*50 + "\n"
+        
+    buffer_relatorio.write(conteudo_texto.encode("utf-8"))
+    buffer_relatorio.seek(0)
+    
+    st.download_button(
+        label="📥 Exportar Relatório de Governança (.TXT)",
+        data=buffer_relatorio,
+        file_name="hy_risk_intelligence_report.txt",
+        mime="text/plain"
+    )
