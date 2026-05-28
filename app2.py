@@ -1,4 +1,4 @@
-gostaria que aperfeiçoasse esse codigo python para deixar ele muito profissional:       import os    
+import os    
 import os
 import io
 import re
