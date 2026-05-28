@@ -2,3 +2,7 @@
 google-genai
 pandas
 plotly
+pandas
+plotly
+google-genai
+streamlit-mic-recorder
