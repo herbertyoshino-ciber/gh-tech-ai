@@ -1,3 +1,4 @@
+ERRO_TESTE = 
 import io
 import json
 import re
