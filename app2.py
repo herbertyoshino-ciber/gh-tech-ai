@@ -98,27 +98,310 @@ CUSTOM_CSS = "\n".join(
     ]
 )
 
-"<script>",
-            f"const text = {spoken_text_json};",
-            f"const autoRead = {auto_read_json};",
-            'const speakButton = document.getElementById("hy-speak");',
-            'const stopButton = document.getElementById("hy-stop");',
-            "function speakHyAnswer(){",
-            'if (!("speechSynthesis" in window) || !text) return;',
-            "window.speechSynthesis.cancel();",
-            "const utterance = new SpeechSynthesisUtterance(text);",
-            'utterance.lang = "pt-BR";',
-            "utterance.rate = 1;",
-            "utterance.pitch = 1;",
-            "window.speechSynthesis.speak(utterance);",
-            "}",
-            'speakButton.addEventListener("click", speakHyAnswer);',
-            "stopButton.addEventListener('click', () => window.speechSynthesis.cancel());",
-            "if (autoRead) { setTimeout(speakHyAnswer, 500); }",
-            "</script>",
+
+def configure_page() -> None:
+    st.set_page_config(
+        page_title=APP_TITLE,
+        page_icon="🛡️",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
+
+
+def initialize_state() -> None:
+    defaults = {
+        "messages": [],
+        "arquivo_log_dados": None,
+        "last_uploaded_file": None,
+        "voice_transcript": "",
+        "auto_read_answers": False,
+  }
+    for key, value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
+
+def sanitize_context(text: str) -> str:
+    replacements = {
+        r"\b\d{1,3}(?:\.\d{1,3}){3}\b": "[IP_REDACTED]",
+        r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b": "[EMAIL_REDACTED]",
+        r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b": "[CPF_REDACTED]",
+        r"\b\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}\b": "[CNPJ_REDACTED]",
+        r"\b(?:\d[ -]*?){13,19}\b": "[CARD_REDACTED]",
+    }
+
+    sanitized = text
+    for pattern, replacement in replacements.items():
+        sanitized = re.sub(pattern, replacement, sanitized)
+
+    return sanitized[:MAX_LOG_CHARS]
+    
+
+def get_api_key() -> str:
+    return st.secrets.get("GEMINI_API_KEY", "").strip()
+
+
+@st.cache_resource(show_spinner=False)
+def get_genai_client(api_key: str) -> genai.Client:
+    return genai.Client(api_key=api_key)
+
+
+def build_system_prompt(scope: str) -> str:
+    return (
+        f"{BASE_PROMPT}\n\n"
+        f"ESCOPO SELECIONADO PELO USUÁRIO: [{scope}]. "
+        "Conecte a análise a esse escopo de inteligência de riscos corporativos."
+    )
+
+
+def build_history_contents(current_prompt: str) -> list[types.Content]:
+    contents = []
+
+    for message in st.session_state.messages[:-1]:
+                role = "model" if message["role"] == "assistant" else "user"
+        contents.append(types.Content(role=role, parts=[types.Part.from_text(text=message["content"])]))
+
+    contents.append(types.Content(role="user", parts=[types.Part.from_text(text=current_prompt)]))
+    return contents
+
+
+def generate_ai_response(client: genai.Client, contents: list[types.Content], system_prompt: str) -> str:
+    config = types.GenerateContentConfig(
+        system_instruction=system_prompt,
+        temperature=0.3,
+        max_output_tokens=4096,
+    )
+
+    try:
+        response = client.models.generate_content(
+            model=PRIMARY_MODEL,
+            contents=contents,
+            config=config,
+        )
+    except Exception as primary_error:
+        error_text = str(primary_error)
+        quota_error = "429" in error_text or "RESOURCE_EXHAUSTED" in error_text
+
+        if not quota_error:
+                       raise RuntimeError(f"Erro técnico no core da IA: {primary_error}") from primary_error
+
+        response = client.models.generate_content(
+            model=FALLBACK_MODEL,
+            contents=contents,
+            config=config,
+        )
+
+    if not response.text:
+        raise RuntimeError("A IA retornou uma resposta vazia. Tente reenviar a pergunta.")
+
+    return response.text
+
+
+def generate_strategic_report(history: list[dict[str, str]]) -> io.BytesIO:
+    report = [
+        "=" * 58,
+        "HY RISK INTELLIGENCE - REPORT (RI-AI)",
+        "Mapeamento estratégico e blindagem de ativos",
+        "=" * 58,
+        "",
+    ]
+
+    for index, message in enumerate(history, 1):
+        author = "USUÁRIO" if message["role"] == "user" else "HY-AI"
+        report.extend(
+            [
+                f"[{index}] {author}:",
+                message["content"],
+                "-" * 58,
+                "",
+            ]
+        )
+
+    report.extend(
+        [
+            "=" * 58,
+            "Fim do relatório. HY Risk Intelligence - Proteção e Negócio.",
         ]
     )
-    components.html(html, height=58)
+
+    buffer = io.BytesIO()
+    buffer.write("\n".join(report).encode("utf-8"))
+    buffer.seek(0)
+    return buffer
+
+
+def render_sidebar() -> str:
+    with st.sidebar:
+        st.markdown("<h1>🛡️ HY-AI</h1>", unsafe_allow_html=True)
+        st.markdown("<p style='text-align:center;'>Mapeamento estratégico e blindagem de ativos</p>", unsafe_allow_html=True)
+        st.markdown("---")
+
+        st.markdown("### 🔍 Escopo de Análise")
+        scope = st.selectbox("Selecione o foco do problema:", ANALYSIS_SCOPES)
+
+        st.markdown("---")
+        st.markdown("### 🔊 Voz")
+        st.session_state.auto_read_answers = st.checkbox(
+            "Ler respostas automaticamente",
+            value=st.session_state.auto_read_answers,
+            help="Usa a voz nativa do navegador para ler a última resposta da IA.",
+        )
+
+        if st.session_state.messages:
+            st.markdown("---")
+            st.markdown("### 📄 Exportar Dados")
+            st.download_button(
+                label="📥 Baixar Relatório Estratégico",
+                              data=generate_strategic_report(st.session_state.messages),
+                file_name="relatorio_hy_risk_intelligence.txt",
+                mime="text/plain",
+                key="download_report_btn",
+            )
+
+        st.markdown("---")
+        if st.button("🗑️ Limpar Histórico", type="secondary"):
+            st.session_state.messages = []
+            st.session_state.arquivo_log_dados = None
+            st.session_state.last_uploaded_file = None
+            st.rerun()
+
+    return scope
+
+
+def render_header() -> None:
+    st.markdown(
+        f"<h1>🛡️ HY-AI <span style='font-size:18px;color:#8b949e;'>{APP_VERSION}</span></h1>",
+        unsafe_allow_html=True,
+    )
+    st.subheader("Mapeamento estratégico e blindagem de ativos 💻")
+
+
+def render_metrics() -> None:
+        columns = st.columns(4)
+    total_user_messages = len([message for message in st.session_state.messages if message["role"] == "user"])
+
+    for column, metric in zip(columns, RISK_METRICS):
+        value = str(total_user_messages) if metric.value == "dynamic" else metric.value
+        with column:
+            st.metric(label=metric.label, value=value, delta=metric.delta)
+
+
+def render_risk_dashboard() -> None:
+    chart_column, guide_column = st.columns([2, 1])
+
+    with chart_column:
+        radar_data = pd.DataFrame(
+            {
+                "r": [4, 5, 3, 4, 5],
+                "theta": [
+                    "Conformidade",
+                    "Segurança de Dados",
+                    "Gestão de Crise",
+                    "Arquitetura de Redes",
+                    "Resposta a Incidentes",
+                ],
+            }
+        )
+        
+        fig = px.line_polar(
+            radar_data,
+            r="r",
+            theta="theta",
+            line_close=True,
+            range_r=[0, 5],
+            title="🛡️ Índice de Maturidade de Risco Operacional",
+        )
+        fig.update_traces(fill="toself", line_color="#58a6ff")
+        fig.update_layout(
+            template="plotly_dark",
+            paper_bgcolor="rgba(0,0,0,0)",
+            plot_bgcolor="rgba(0,0,0,0)",
+            margin={"l": 20, "r": 20, "t": 40, "b": 20},
+            height=320,
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+    with guide_column:
+        st.markdown(
+            "<p style='font-weight:700;color:#58a6ff;margin-bottom:5px;'>🔍 Guia Rápido de Governança</p>",
+            unsafe_allow_html=True,
+        )
+
+ with st.expander("🚨 Prazo Notificação ANPD"):
+            st.write(
+                "Pela LGPD, incidentes de segurança relevantes envolvendo dados pessoais devem ser comunicados "
+                "à ANPD e aos titulares em prazo razoável, conforme risco e impacto aos titulares."
+            )
+
+        with st.expander("🛠️ O que compõe RTO e RPO?"):
+            st.write(
+                "RTO é o tempo máximo tolerável para restabelecer um serviço. "
+                "RPO é o limite máximo aceitável de perda de dados após uma falha."
+            )
+
+
+def render_chat_history():
+    chat_container = st.container()
+
+    with chat_container:
+        for index, message in enumerate(st.session_state.messages):
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+                if message["role"] == "assistant":
+                    st.feedback("thumbs", key=f"feedback_{index}")
+
+    return chat_container
+
+
+def render_log_uploader() -> None:
+    uploaded_file = st.file_uploader(
+        "Anexar log",
+        type=["txt", "log"],
+        label_visibility="collapsed",
+    )
+
+    if not uploaded_file:
+        return
+
+    uploaded_file.seek(0)
+    raw_text = uploaded_file.read().decode("utf-8", errors="replace")
+    st.session_state.arquivo_log_dados = sanitize_context(raw_text)
+    st.session_state.last_uploaded_file = uploaded_file.name
+
+    st.markdown(
+        f"<p style='color:#58a6ff;font-size:12px;margin-top:-10px;margin-bottom:10px;'>"
+        f"📎 Arquivo carregado e higienizado: <b>{uploaded_file.name}</b></p>",
+        unsafe_allow_html=True,
+    )
+
+
+def get_last_assistant_answer() -> str:
+       for message in reversed(st.session_state.messages):
+        if message["role"] == "assistant":
+            return message["content"]
+    return ""
+
+
+def render_text_to_speech_controls() -> None:
+    answer = get_last_assistant_answer()
+    if not answer:
+        return
+
+    spoken_text = re.sub(r"[*_`#>\[\]()]", "", answer)
+    spoken_text_json = json.dumps(spoken_text)
+    auto_read_json = json.dumps(bool(st.session_state.auto_read_answers))
+    html = (
+        '<button onclick="speakHyAnswer()" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:8px 12px;cursor:pointer;margin-right:8px;">🔊 Ouvir última resposta</button>'
+        '<button onclick="window.speechSynthesis.cancel()" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:8px 12px;cursor:pointer;">⏹️ Parar</button>'
+        "<script>"
+        f"const hyText={spoken_text_json};"
+        f"const hyAutoRead={auto_read_json};"
+        "function speakHyAnswer(){if(!('speechSynthesis' in window)||!hyText)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(hyText);u.lang='pt-BR';u.rate=1;u.pitch=1;window.speechSynthesis.speak(u);}"
+        "if(hyAutoRead){setTimeout(speakHyAnswer,500);}"
+        "</script>"
+    )
+    components.html(html, height=48)
 
 
 def render_voice_input() -> str:
@@ -140,35 +423,35 @@ def render_voice_input() -> str:
         key="hy_voice_to_text",
     )
 
-    if transcript:
-        st.session_state.voice_transcript = transcript
-
-    if not st.session_state.voice_transcript:
-        return ""
-
-    edited_transcript = st.text_area(
-        "Texto reconhecido",
-        value=st.session_state.voice_transcript,
-        height=90,
-        key="voice_transcript_editor",
-    )
-
-    if st.button("Enviar transcrição para análise", type="primary"):
-        st.session_state.voice_transcript = ""
-        return edited_transcript.strip()
-
+if transcript
+    st.session_state.voice_transcript = transcript
+        
+if not st.session_state.voice_transcript:
     return ""
+
+edited_transcript = st.text_area(
+    "Texto reconhecido",
+    value=st.sessiion_state.voice_trancript,
+    height=90,
+    key="voice_transcript_editor",
+)
+
+if st.button("Enviar transcrição para análise", type="primary"):
+    st.session_state.voice_transcript = ""
+    return edited_transcript.strip()
+
+return ""
 
 
 def build_user_prompt(prompt: str) -> str:
     if not st.session_state.arquivo_log_dados:
         return prompt
 
-    return (
-        "CONTEXTO DO LOG ENVIADO (HIGIENIZADO):\n"
-        f"```\n{st.session_state.arquivo_log_dados}\n```\n\n"
-        f"PERGUNTA DO USUÁRIO:\n{prompt}"
-    )
+return (
+    "CONTEXTO DO LOG ENVIADO (HIGIENIZADO):\n"
+    f"```\n{st.session_state.arquivo_log_dados}\n```\n\n"
+    f"PERGUNTA DO USUÁRIO:\n{prompt}"
+)
 
 
 def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_prompt: str = "") -> None:
@@ -176,7 +459,7 @@ def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_p
     if not prompt:
         return
 
-    complete_prompt = build_user_prompt(prompt)
+complete_prompt = build_user_prompt(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with chat_container:
@@ -192,7 +475,7 @@ def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_p
                     st.error(str(error))
                     return
 
-                st.markdown(answer)
+st.markdown(answer)
                 st.session_state.messages.append({"role": "assistant", "content": answer})
                 st.toast("Análise de riscos concluída!", icon="🛡️")
                 st.rerun()
@@ -214,7 +497,7 @@ def main() -> None:
     configure_page()
     initialize_state()
 
-    api_key = get_api_key()
+api_key = get_api_key()
     if not api_key:
         st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud. Configure GEMINI_API_KEY para iniciar a IA.")
         st.stop()
@@ -227,8 +510,7 @@ def main() -> None:
     st.markdown("---")
     render_risk_dashboard()
     st.markdown("---")
-
-    chat_container = render_chat_history()
+  chat_container = render_chat_history()
     render_text_to_speech_controls()
     st.markdown("<br><br>", unsafe_allow_html=True)
     render_log_uploader()
