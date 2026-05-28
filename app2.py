@@ -1,4 +1,4 @@
-import os    
+esse codigo que irei passar, eu gostaria que colocasse um microfone na caixa de mensagem para que tivesse mensagem de texto para voz e tambem pudesse ou vir a resposta ou seja texto,para voz, igual as outras ia do mercado.     import os    
 import os
 import io
 import re
