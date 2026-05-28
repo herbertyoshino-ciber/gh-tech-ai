@@ -442,25 +442,24 @@ def render_voice_input() -> str:
         key="hy_voice_to_text",
     )
 
-if transcript
-    st.session_state.voice_transcript = transcript
-        
-if not st.session_state.voice_transcript:
+    if transcript:
+        st.session_state.voice_transcript = transcript
+
+    if not st.session_state.voice_transcript:
+        return ""
+
+    edited_transcript = st.text_area(
+        "Texto reconhecido",
+        value=st.session_state.voice_transcript,
+        height=90,
+        key="voice_transcript_editor",
+    )
+
+    if st.button("Enviar transcrição para análise", type="primary"):
+        st.session_state.voice_transcript = ""
+        return edited_transcript.strip()
+
     return ""
-
-edited_transcript = st.text_area(
-    "Texto reconhecido",
-    value=st.sessiion_state.voice_trancript,
-    height=90,
-    key="voice_transcript_editor",
-)
-
-if st.button("Enviar transcrição para análise", type="primary"):
-    st.session_state.voice_transcript = ""
-    return edited_transcript.strip()
-
-return ""
-
 
 def build_user_prompt(prompt: str) -> str:
     if not st.session_state.arquivo_log_dados:
