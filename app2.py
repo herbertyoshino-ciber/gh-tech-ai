@@ -230,7 +230,7 @@ if user_input := st.chat_input("Insira sua análise, log ou cenário de risco co
     # Adiciona a mensagem do usuário na tela e no histórico
     st.session_state.messages.append({"role": "user", "content": texto_higienizado})
     with st.chat_message("user"):
-        st.write(texto_higienizado})
+        st.write(texto_higienizado) # <-- CORRIGIDO AQUI
 
     # Resposta do Assistente
     with st.chat_message("assistant"):
@@ -240,6 +240,7 @@ if user_input := st.chat_input("Insira sua análise, log ou cenário de risco co
         # Constrói o histórico formatado para enviar à API
         historico_api = [{"role": "user", "parts": [BASE_PROMPT]}]
         for m in st.session_state.messages:
+
         # Define os papéis compatíveis com a API do Gemini
         role_api = "user" if m["role"] == "user" else "model"
         historico_api.append({"role": role_api, "parts": [m["content"]]})
