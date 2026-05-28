@@ -320,7 +320,7 @@ def render_risk_dashboard() -> None:
                 ],
             }
         )
-        
+
         fig = px.line_polar(
             radar_data,
             r="r",
@@ -329,6 +329,7 @@ def render_risk_dashboard() -> None:
             range_r=[0, 5],
             title="🛡️ Índice de Maturidade de Risco Operacional",
         )
+
         fig.update_traces(fill="toself", line_color="#58a6ff")
         fig.update_layout(
             template="plotly_dark",
@@ -337,6 +338,7 @@ def render_risk_dashboard() -> None:
             margin={"l": 20, "r": 20, "t": 40, "b": 20},
             height=320,
         )
+
         st.plotly_chart(fig, use_container_width=True)
 
     with guide_column:
@@ -345,7 +347,7 @@ def render_risk_dashboard() -> None:
             unsafe_allow_html=True,
         )
 
- with st.expander("🚨 Prazo Notificação ANPD"):
+        with st.expander("🚨 Prazo Notificação ANPD"):
             st.write(
                 "Pela LGPD, incidentes de segurança relevantes envolvendo dados pessoais devem ser comunicados "
                 "à ANPD e aos titulares em prazo razoável, conforme risco e impacto aos titulares."
