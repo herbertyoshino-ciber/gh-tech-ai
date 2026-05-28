@@ -426,6 +426,7 @@ def render_text_to_speech_controls() -> None:
 def render_voice_input() -> str:
     return ""
     
+    
 def build_user_prompt(prompt: str) -> str:
     if not st.session_state.arquivo_log_dados:
         return prompt
