@@ -222,50 +222,48 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
 
-# Entrada de Nova Mensagem do Usuário
+# Colado na margem esquerda (Sem espaços antes)
 if user_input := st.chat_input("Insira sua análise, log ou cenário de risco corporativo..."):
-    # Higieniza a entrada contra vazamento acidental de dados sensíveis antes de tratar
+    # 4 Espaços (1 Tab) antes destas linhas:
     texto_higienizado = higienizar_contexto(user_input)
-    
-    # Adiciona a mensagem do usuário na tela e no histórico
     st.session_state.messages.append({"role": "user", "content": texto_higienizado})
+    
     with st.chat_message("user"):
-        st.write(texto_higienizado) # <-- CORRIGIDO AQUI
+        # 8 Espaços (2 Tabs) antes desta linha:
+        st.write(texto_higienizado)
 
-    # Resposta do Assistente
     with st.chat_message("assistant"):
+        # 8 Espaços (2 Tabs) antes destas linhas:
         placeholder = st.empty()
         placeholder.markdown("*Analisando arquitetura e calculando riscos de conformidade...*")
         
-        # Constrói o histórico formatado para enviar à API
         historico_api = [{"role": "user", "parts": [BASE_PROMPT]}]
+        
         for m in st.session_state.messages:
+            # 12 Espaços (3 Tabs) antes destas duas linhas abaixo (Onde dava o erro):
+            role_api = "user" if m["role"] == "user" else "model"
+            historico_api.append({"role": role_api, "parts": [m["content"]]})
+            
+        try:
+            # 12 Espaços (3 Tabs) antes do bloco de envio:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=historico_api
+            )
+            resposta_ia = response.text
+            placeholder.markdown(resposta_ia)
+            st.session_state.messages.append({"role": "assistant", "content": resposta_ia})
+            
+        except Exception as e:
+            # 12 Espaços (3 Tabs) antes do tratamento de erro:
+            erro_msg = (
+                "⚠️ **Erro de Conexão com o Core da IA (503)**: O servidor do modelo está enfrentando um pico massivo "
+                "de acessos neste momento. As tentativas de reconexão automática foram esgotadas. Por favor, "
+                "aguarde alguns instantes e envie a mensagem novamente."
+            )
+            placeholder.error(erro_msg)
+            print(f"[HY-AI LOG ERROR]: {str(e)}")
 
-        # Define os papéis compatíveis com a API do Gemini
-        role_api = "user" if m["role"] == "user" else "model"
-        historico_api.append({"role": role_api, "parts": [m["content"]]})
-        
-    try:
-        # Envia a requisição usando a SDK nova com os retries aplicados
-        response = client.models.generate_content(
-            model='gemini-2.5-flash',  # Mapeado para o modelo estável recomendado
-            contents=historico_api
-        )
-        
-        resposta_ia = response.text
-        placeholder.markdown(resposta_ia)
-        st.session_state.messages.append({"role": "assistant", "content": resposta_ia})
-        
-    except Exception as e:
-        # Caso os servidores falhem mesmo após as 5 tentativas automáticas, exibe erro amigável
-        erro_msg = (
-            "⚠️ **Erro de Conexão com o Core da IA (503)**: O servidor do modelo está enfrentando um pico massivo "
-            "de acessos neste momento. As tentativas de reconexão automática foram esgotadas. Por favor, "
-            "aguarde alguns instantes e envie a mensagem novamente."
-        )
-        placeholder.error(erro_msg)
-        # Log técnico do erro no terminal para debug interno
-        print(f"[HY-AI LOG ERROR]: {str(e)}")
 
 # ==========================================
 # SIDEBAR DE CONTROLE E EXPORTAÇÃO
