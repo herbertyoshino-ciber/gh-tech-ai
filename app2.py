@@ -159,10 +159,12 @@ def build_history_contents(current_prompt: str) -> list[types.Content]:
     contents = []
 
     for message in st.session_state.messages[:-1]:
-                role = "model" if message["role"] == "assistant" else "user"
-        contents.append(types.Content(role=role, parts=[types.Part.from_text(text=message["content"])]))
+        role = "model" if message["role"] == "assistant" else "user"
+        part = types.Part.from_text(text=message["content"])
+        contents.append(types.Content(role=role, parts=[part]))
 
-    contents.append(types.Content(role="user", parts=[types.Part.from_text(text=current_prompt)]))
+    current_part = types.Part.from_text(text=current_prompt)
+    contents.append(types.Content(role="user", parts=[current_part]))
     return contents
 
 
