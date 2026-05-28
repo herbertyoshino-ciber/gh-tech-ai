@@ -1,4 +1,3 @@
-ERRO_TESTE = 
 import io
 import json
 import re
@@ -117,7 +116,7 @@ def initialize_state() -> None:
         "last_uploaded_file": None,
         "voice_transcript": "",
         "auto_read_answers": False,
-  }
+    }
     for key, value in defaults.items():
         if key not in st.session_state:
             st.session_state[key] = value
@@ -137,7 +136,7 @@ def sanitize_context(text: str) -> str:
         sanitized = re.sub(pattern, replacement, sanitized)
 
     return sanitized[:MAX_LOG_CHARS]
-    
+
 
 def get_api_key() -> str:
     return st.secrets.get("GEMINI_API_KEY", "").strip()
@@ -187,7 +186,7 @@ def generate_ai_response(client: genai.Client, contents: list[types.Content], sy
         quota_error = "429" in error_text or "RESOURCE_EXHAUSTED" in error_text
 
         if not quota_error:
-                       raise RuntimeError(f"Erro técnico no core da IA: {primary_error}") from primary_error
+            raise RuntimeError(f"Erro técnico no core da IA: {primary_error}") from primary_error
 
         response = client.models.generate_content(
             model=FALLBACK_MODEL,
@@ -256,7 +255,7 @@ def render_sidebar() -> str:
             st.markdown("### 📄 Exportar Dados")
             st.download_button(
                 label="📥 Baixar Relatório Estratégico",
-                              data=generate_strategic_report(st.session_state.messages),
+                data=generate_strategic_report(st.session_state.messages),
                 file_name="relatorio_hy_risk_intelligence.txt",
                 mime="text/plain",
                 key="download_report_btn",
@@ -282,27 +281,12 @@ def render_header() -> None:
 
 def render_metrics() -> None:
     columns = st.columns(4)
-
-    total_user_messages = len(
-        [
-            message
-            for message in st.session_state.messages
-            if message["role"] == "user"
-        ]
-    )
+    total_user_messages = len([message for message in st.session_state.messages if message["role"] == "user"])
 
     for column, metric in zip(columns, RISK_METRICS):
-        if metric.value == "dynamic":
-            value = str(total_user_messages)
-        else:
-            value = metric.value
-
+        value = str(total_user_messages) if metric.value == "dynamic" else metric.value
         with column:
-            st.metric(
-                label=metric.label,
-                value=value,
-                delta=metric.delta,
-            )
+            st.metric(label=metric.label, value=value, delta=metric.delta)
 
 
 def render_risk_dashboard() -> None:
@@ -330,7 +314,6 @@ def render_risk_dashboard() -> None:
             range_r=[0, 5],
             title="🛡️ Índice de Maturidade de Risco Operacional",
         )
-
         fig.update_traces(fill="toself", line_color="#58a6ff")
         fig.update_layout(
             template="plotly_dark",
@@ -339,7 +322,6 @@ def render_risk_dashboard() -> None:
             margin={"l": 20, "r": 20, "t": 40, "b": 20},
             height=320,
         )
-
         st.plotly_chart(fig, use_container_width=True)
 
     with guide_column:
@@ -397,7 +379,7 @@ def render_log_uploader() -> None:
 
 
 def get_last_assistant_answer() -> str:
-       for message in reversed(st.session_state.messages):
+    for message in reversed(st.session_state.messages):
         if message["role"] == "assistant":
             return message["content"]
     return ""
@@ -425,18 +407,53 @@ def render_text_to_speech_controls() -> None:
 
 
 def render_voice_input() -> str:
+    st.markdown("#### 🎙️ Entrada por voz")
+
+    if speech_to_text is None:
+        st.info(
+            "Para ativar o microfone, adicione `streamlit-mic-recorder` ao requirements.txt "
+            "e publique novamente no GitHub/Streamlit Cloud."
+        )
+        return ""
+
+    transcript = speech_to_text(
+        language="pt-BR",
+        start_prompt="🎙️ Gravar pergunta",
+        stop_prompt="⏹️ Parar gravação",
+        just_once=True,
+        use_container_width=True,
+        key="hy_voice_to_text",
+    )
+
+    if transcript:
+        st.session_state.voice_transcript = transcript
+
+    if not st.session_state.voice_transcript:
+        return ""
+
+    edited_transcript = st.text_area(
+        "Texto reconhecido",
+        value=st.session_state.voice_transcript,
+        height=90,
+        key="voice_transcript_editor",
+    )
+
+    if st.button("Enviar transcrição para análise", type="primary"):
+        st.session_state.voice_transcript = ""
+        return edited_transcript.strip()
+
     return ""
-    
-    
+
+
 def build_user_prompt(prompt: str) -> str:
     if not st.session_state.arquivo_log_dados:
         return prompt
 
-return (
-    "CONTEXTO DO LOG ENVIADO (HIGIENIZADO):\n"
-    f"```\n{st.session_state.arquivo_log_dados}\n```\n\n"
-    f"PERGUNTA DO USUÁRIO:\n{prompt}"
-)
+    return (
+        "CONTEXTO DO LOG ENVIADO (HIGIENIZADO):\n"
+        f"```\n{st.session_state.arquivo_log_dados}\n```\n\n"
+        f"PERGUNTA DO USUÁRIO:\n{prompt}"
+    )
 
 
 def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_prompt: str = "") -> None:
@@ -444,7 +461,7 @@ def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_p
     if not prompt:
         return
 
-complete_prompt = build_user_prompt(prompt)
+    complete_prompt = build_user_prompt(prompt)
     st.session_state.messages.append({"role": "user", "content": prompt})
 
     with chat_container:
@@ -460,7 +477,7 @@ complete_prompt = build_user_prompt(prompt)
                     st.error(str(error))
                     return
 
-st.markdown(answer)
+                st.markdown(answer)
                 st.session_state.messages.append({"role": "assistant", "content": answer})
                 st.toast("Análise de riscos concluída!", icon="🛡️")
                 st.rerun()
@@ -482,7 +499,7 @@ def main() -> None:
     configure_page()
     initialize_state()
 
-api_key = get_api_key()
+    api_key = get_api_key()
     if not api_key:
         st.warning("⚠️ Chave ausente nos Secrets do Streamlit Cloud. Configure GEMINI_API_KEY para iniciar a IA.")
         st.stop()
@@ -495,7 +512,8 @@ api_key = get_api_key()
     st.markdown("---")
     render_risk_dashboard()
     st.markdown("---")
-  chat_container = render_chat_history()
+
+    chat_container = render_chat_history()
     render_text_to_speech_controls()
     st.markdown("<br><br>", unsafe_allow_html=True)
     render_log_uploader()
