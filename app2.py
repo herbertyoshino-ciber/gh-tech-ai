@@ -1,4 +1,4 @@
-import os    
+gostaria que aperfeiçoasse esse codigo python para deixar ele muito profissional:       import os    
 import os
 import io
 import re
@@ -441,8 +441,3 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
-       
-
-     
-                
