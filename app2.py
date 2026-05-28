@@ -6,14 +6,8 @@ from dataclasses import dataclass
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import streamlit.components.v1 as components
 from google import genai
 from google.genai import types
-
-try:
-    from streamlit_mic_recorder import speech_to_text
-except ImportError:
-    speech_to_text = None
 
 
 APP_TITLE = "HY Risk Intelligence | HI-AI"
@@ -136,9 +130,6 @@ def initialize_state() -> None:
         "messages": [],
         "arquivo_log_dados": None,
         "last_uploaded_file": None,
-        "voice_transcript": "",
-        "pending_voice_prompt": "",
-        "auto_read_answers": False,
     }
     for key, value in defaults.items():
         if key not in st.session_state:
@@ -272,14 +263,6 @@ def render_sidebar() -> str:
 
         st.markdown("### 🔍 Escopo de Análise")
         scope = st.selectbox("Selecione o foco do problema:", ANALYSIS_SCOPES)
-
-        st.markdown("---")
-        st.markdown("### 🔊 Voz")
-        st.session_state.auto_read_answers = st.checkbox(
-            "Ler respostas automaticamente",
-            value=st.session_state.auto_read_answers,
-            help="Usa a voz nativa do navegador para ler a última resposta da IA.",
-        )
 
         if st.session_state.messages:
             st.markdown("---")
@@ -416,87 +399,6 @@ def get_last_assistant_answer() -> str:
     return ""
 
 
-def clean_text_for_speech(text: str) -> str:
-    text = re.sub(r"```[\s\S]*?```", " bloco de código omitido. ", text)
-    text = re.sub(r"`([^`]*)`", r"\1", text)
-    text = re.sub(r"\*\*([^*]+)\*\*", r"\1. ", text)
-    text = text.replace("/", " ")
-    text = re.sub(r"[?¿!¡]+", ". ", text)
-    text = re.sub(r"[:;,.]+", ". ", text)
-    text = re.sub(r"[-–—]+", " ", text)
-    text = re.sub(r"[*_#>\[\]()]|\|", " ", text)
-    text = re.sub(
-        r"[\U0001F300-\U0001FAFF\U00002700-\U000027BF\U00002600-\U000026FF]",
-        "",
-        text,
-    )
-    text = re.sub(r"\s+", " ", text).strip()
-    return text
-
-
-def render_text_to_speech_controls() -> None:
-    answer = get_last_assistant_answer()
-    if not answer:
-        return
-
-    spoken_text = clean_text_for_speech(answer)
-    spoken_text_json = json.dumps(spoken_text)
-    auto_read_json = json.dumps(bool(st.session_state.auto_read_answers))
-    html = (
-        '<button onclick="speakHyAnswer()" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:8px 12px;cursor:pointer;margin-right:8px;">🔊 Ouvir última resposta</button>'
-        '<button onclick="window.speechSynthesis.cancel()" style="background:#21262d;color:#c9d1d9;border:1px solid #30363d;border-radius:6px;padding:8px 12px;cursor:pointer;">⏹️ Parar</button>'
-        "<script>"
-        f"const hyText={spoken_text_json};"
-        f"const hyAutoRead={auto_read_json};"
-        "function hyBestVoice(){const voices=window.speechSynthesis.getVoices();const preferred=['Google português do Brasil','Google Portuguese','Microsoft Maria Online','Microsoft Francisca Online','Microsoft Maria','Microsoft Francisca','Luciana','Portuguese Brazil'];return voices.find(v=>preferred.some(p=>v.name.includes(p)))||voices.find(v=>v.lang==='pt-BR'&&v.localService===false)||voices.find(v=>v.lang==='pt-BR')||voices.find(v=>v.lang&&v.lang.startsWith('pt'))||null;}"
-        "function speakHyAnswer(){if(!('speechSynthesis' in window)||!hyText)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(hyText);const voice=hyBestVoice();if(voice)u.voice=voice;u.lang='pt-BR';u.rate=0.88;u.pitch=1.04;u.volume=1;window.speechSynthesis.speak(u);}"
-        "window.speechSynthesis.onvoiceschanged=()=>{};"
-        "if(hyAutoRead){setTimeout(speakHyAnswer,700);}"
-        "</script>"
-    )
-    components.html(html, height=48)
-
-
-def render_voice_input() -> str:
-    st.markdown("#### 🎙️ Entrada por voz")
-
-    if speech_to_text is None:
-        st.info(
-            "Para ativar o microfone, adicione `streamlit-mic-recorder` ao requirements.txt "
-            "e publique novamente no GitHub/Streamlit Cloud."
-        )
-        return ""
-
-    transcript = speech_to_text(
-        language="pt-BR",
-        start_prompt="🎙️ Gravar pergunta",
-        stop_prompt="⏹️ Parar gravação",
-        just_once=True,
-        use_container_width=True,
-        key="hy_voice_to_text",
-    )
-
-    if transcript:
-        st.session_state.voice_transcript = transcript
-
-    if not st.session_state.voice_transcript:
-        return ""
-
-    edited_transcript = st.text_area(
-        "Texto reconhecido",
-        value=st.session_state.voice_transcript,
-        height=90,
-        key="voice_transcript_editor",
-    )
-
-    if st.button("Enviar transcrição para análise", type="primary"):
-        st.session_state.pending_voice_prompt = edited_transcript.strip()
-        st.session_state.voice_transcript = ""
-        st.rerun()
-
-    return ""
-
-
 def build_user_prompt(prompt: str) -> str:
     if not st.session_state.arquivo_log_dados:
         return prompt
@@ -508,14 +410,8 @@ def build_user_prompt(prompt: str) -> str:
     )
 
 
-def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_prompt: str = "") -> None:
-    prompt = voice_prompt or st.session_state.pending_voice_prompt
-
-    if prompt:
-        st.session_state.pending_voice_prompt = ""
-    else:
-        prompt = st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança...")
-
+def handle_chat_prompt(chat_container, scope: str, client: genai.Client) -> None:
+    prompt = st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança...")
     if not prompt:
         return
 
@@ -572,11 +468,9 @@ def main() -> None:
     st.markdown("---")
 
     chat_container = render_chat_history()
-    render_text_to_speech_controls()
     st.markdown("<br><br>", unsafe_allow_html=True)
     render_log_uploader()
-    voice_prompt = render_voice_input()
-    handle_chat_prompt(chat_container, scope, client, voice_prompt)
+    handle_chat_prompt(chat_container, scope, client)
     render_footer()
 
 
