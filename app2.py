@@ -115,6 +115,7 @@ def initialize_state() -> None:
         "arquivo_log_dados": None,
         "last_uploaded_file": None,
         "voice_transcript": "",
+        "pending_voice_prompt": "",
         "auto_read_answers": False,
     }
     for key, value in defaults.items():
@@ -385,12 +386,26 @@ def get_last_assistant_answer() -> str:
     return ""
 
 
+def clean_text_for_speech(text: str) -> str:
+    text = re.sub(r"```[\s\S]*?```", " bloco de código omitido. ", text)
+    text = re.sub(r"`([^`]*)`", r"\1", text)
+    text = re.sub(r"\*\*([^*]+)\*\*", r"\1. ", text)
+    text = re.sub(r"[*_#>\[\]()]|\|", " ", text)
+    text = re.sub(
+        r"[\U0001F300-\U0001FAFF\U00002700-\U000027BF\U00002600-\U000026FF]",
+        "",
+        text,
+    )
+    text = re.sub(r"\s+", " ", text).strip()
+    return text
+
+
 def render_text_to_speech_controls() -> None:
     answer = get_last_assistant_answer()
     if not answer:
         return
 
-    spoken_text = re.sub(r"[*_`#>\[\]()]", "", answer)
+    spoken_text = clean_text_for_speech(answer)
     spoken_text_json = json.dumps(spoken_text)
     auto_read_json = json.dumps(bool(st.session_state.auto_read_answers))
     html = (
@@ -399,8 +414,10 @@ def render_text_to_speech_controls() -> None:
         "<script>"
         f"const hyText={spoken_text_json};"
         f"const hyAutoRead={auto_read_json};"
-        "function speakHyAnswer(){if(!('speechSynthesis' in window)||!hyText)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(hyText);u.lang='pt-BR';u.rate=1;u.pitch=1;window.speechSynthesis.speak(u);}"
-        "if(hyAutoRead){setTimeout(speakHyAnswer,500);}"
+        "function hyBestVoice(){const voices=window.speechSynthesis.getVoices();const preferred=['Google português do Brasil','Microsoft Maria','Microsoft Francisca','Luciana','Portuguese Brazil'];return voices.find(v=>preferred.some(p=>v.name.includes(p)))||voices.find(v=>v.lang==='pt-BR')||voices.find(v=>v.lang&&v.lang.startsWith('pt'))||null;}"
+        "function speakHyAnswer(){if(!('speechSynthesis' in window)||!hyText)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(hyText);const voice=hyBestVoice();if(voice)u.voice=voice;u.lang='pt-BR';u.rate=0.92;u.pitch=1.02;u.volume=1;window.speechSynthesis.speak(u);}"
+        "window.speechSynthesis.onvoiceschanged=()=>{};"
+        "if(hyAutoRead){setTimeout(speakHyAnswer,700);}"
         "</script>"
     )
     components.html(html, height=48)
@@ -439,8 +456,9 @@ def render_voice_input() -> str:
     )
 
     if st.button("Enviar transcrição para análise", type="primary"):
+        st.session_state.pending_voice_prompt = edited_transcript.strip()
         st.session_state.voice_transcript = ""
-        return edited_transcript.strip()
+        st.rerun()
 
     return ""
 
@@ -457,7 +475,13 @@ def build_user_prompt(prompt: str) -> str:
 
 
 def handle_chat_prompt(chat_container, scope: str, client: genai.Client, voice_prompt: str = "") -> None:
-    prompt = voice_prompt or st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança...")
+    prompt = voice_prompt or st.session_state.pending_voice_prompt
+
+    if prompt:
+        st.session_state.pending_voice_prompt = ""
+    else:
+        prompt = st.chat_input("Digite sua dúvida estratégica ou técnica sobre segurança...")
+
     if not prompt:
         return
 
