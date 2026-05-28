@@ -179,15 +179,10 @@ REGRAS DE OPERAÇÃO:
 # O parâmetro max_retries força a SDK a tentar novamente usando backoff exponencial automático
 @st.cache_resource
 def inicializar_cliente_ia():
-    # Ele busca a chave GEMINI_API_KEY automaticamente do ambiente (os.environ)
-    return genai.Client(
-        http_options={
-            "max_retries": 5,  # Tenta até 5 vezes em caso de erro 503 ou instabilidade
-            "timeout": 30.0    # 30 segundos de limite por tentativa
-        }
-    )
+    return genai.Client() # Remove as http_options daqui
 
 client = inicializar_cliente_ia()
+
 
 # Função de Higienização (Data Masking)
 def higienizar_contexto(texto):
