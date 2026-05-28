@@ -280,13 +280,28 @@ def render_header() -> None:
 
 
 def render_metrics() -> None:
-        columns = st.columns(4)
-    total_user_messages = len([message for message in st.session_state.messages if message["role"] == "user"])
+    columns = st.columns(4)
+
+    total_user_messages = len(
+        [
+            message
+            for message in st.session_state.messages
+            if message["role"] == "user"
+        ]
+    )
 
     for column, metric in zip(columns, RISK_METRICS):
-        value = str(total_user_messages) if metric.value == "dynamic" else metric.value
+        if metric.value == "dynamic":
+            value = str(total_user_messages)
+        else:
+            value = metric.value
+
         with column:
-            st.metric(label=metric.label, value=value, delta=metric.delta)
+            st.metric(
+                label=metric.label,
+                value=value,
+                delta=metric.delta,
+            )
 
 
 def render_risk_dashboard() -> None:
