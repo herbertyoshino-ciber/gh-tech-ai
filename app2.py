@@ -424,43 +424,8 @@ def render_text_to_speech_controls() -> None:
 
 
 def render_voice_input() -> str:
-    st.markdown("#### 🎙️ Entrada por voz")
-
-    if speech_to_text is None:
-        st.info(
-            "Para ativar o microfone, adicione `streamlit-mic-recorder` ao requirements.txt "
-            "e publique novamente no GitHub/Streamlit Cloud."
-        )
-        return ""
-
-    transcript = speech_to_text(
-        language="pt-BR",
-        start_prompt="🎙️ Gravar pergunta",
-        stop_prompt="⏹️ Parar gravação",
-        just_once=True,
-        use_container_width=True,
-        key="hy_voice_to_text",
-    )
-
-    if transcript:
-        st.session_state.voice_transcript = transcript
-
-    if not st.session_state.voice_transcript:
-        return ""
-
-    edited_transcript = st.text_area(
-        "Texto reconhecido",
-        value=st.session_state.voice_transcript,
-        height=90,
-        key="voice_transcript_editor",
-    )
-
-    if st.button("Enviar transcrição para análise", type="primary"):
-        st.session_state.voice_transcript = ""
-        return edited_transcript.strip()
-
     return ""
-
+    
 def build_user_prompt(prompt: str) -> str:
     if not st.session_state.arquivo_log_dados:
         return prompt
