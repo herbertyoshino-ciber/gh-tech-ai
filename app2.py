@@ -390,6 +390,10 @@ def clean_text_for_speech(text: str) -> str:
     text = re.sub(r"```[\s\S]*?```", " bloco de código omitido. ", text)
     text = re.sub(r"`([^`]*)`", r"\1", text)
     text = re.sub(r"\*\*([^*]+)\*\*", r"\1. ", text)
+    text = text.replace("/", " ")
+    text = re.sub(r"[?¿!¡]+", ". ", text)
+    text = re.sub(r"[:;,.]+", ". ", text)
+    text = re.sub(r"[-–—]+", " ", text)
     text = re.sub(r"[*_#>\[\]()]|\|", " ", text)
     text = re.sub(
         r"[\U0001F300-\U0001FAFF\U00002700-\U000027BF\U00002600-\U000026FF]",
@@ -414,8 +418,8 @@ def render_text_to_speech_controls() -> None:
         "<script>"
         f"const hyText={spoken_text_json};"
         f"const hyAutoRead={auto_read_json};"
-        "function hyBestVoice(){const voices=window.speechSynthesis.getVoices();const preferred=['Google português do Brasil','Microsoft Maria','Microsoft Francisca','Luciana','Portuguese Brazil'];return voices.find(v=>preferred.some(p=>v.name.includes(p)))||voices.find(v=>v.lang==='pt-BR')||voices.find(v=>v.lang&&v.lang.startsWith('pt'))||null;}"
-        "function speakHyAnswer(){if(!('speechSynthesis' in window)||!hyText)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(hyText);const voice=hyBestVoice();if(voice)u.voice=voice;u.lang='pt-BR';u.rate=0.92;u.pitch=1.02;u.volume=1;window.speechSynthesis.speak(u);}"
+        "function hyBestVoice(){const voices=window.speechSynthesis.getVoices();const preferred=['Google português do Brasil','Google Portuguese','Microsoft Maria Online','Microsoft Francisca Online','Microsoft Maria','Microsoft Francisca','Luciana','Portuguese Brazil'];return voices.find(v=>preferred.some(p=>v.name.includes(p)))||voices.find(v=>v.lang==='pt-BR'&&v.localService===false)||voices.find(v=>v.lang==='pt-BR')||voices.find(v=>v.lang&&v.lang.startsWith('pt'))||null;}"
+        "function speakHyAnswer(){if(!('speechSynthesis' in window)||!hyText)return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(hyText);const voice=hyBestVoice();if(voice)u.voice=voice;u.lang='pt-BR';u.rate=0.88;u.pitch=1.04;u.volume=1;window.speechSynthesis.speak(u);}"
         "window.speechSynthesis.onvoiceschanged=()=>{};"
         "if(hyAutoRead){setTimeout(speakHyAnswer,700);}"
         "</script>"
