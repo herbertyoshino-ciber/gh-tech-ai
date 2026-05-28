@@ -48,6 +48,7 @@ ANALYSIS_SCOPES = [
     "Segurança de Redes e Firewalls",
     "Conformidade e Privacidade (LGPD/GDPR)",
     "Pentest e Defesa Ativa (Blue/Red Team)",
+    "Modo Estudante / Laboratório",
 ]
 
 
@@ -66,6 +67,27 @@ BASE_PROMPT = "\n".join(
         "3. Clareza executiva: seja objetivo, acionável e técnico quando necessário, sem perder a visão de negócio.",
         "4. Ética e segurança: nunca forneça instruções ofensivas, ilegais, destrutivas ou voltadas à exploração não autorizada. Converta pedidos arriscados em orientação defensiva, preventiva e corporativa.",
         "5. Privacidade: trate logs, nomes, e-mails, IPs, documentos e identificadores como dados sensíveis.",
+        "6. Educação em cibersegurança: apoie estudantes e profissionais em laboratórios autorizados, CTFs, máquinas virtuais próprias e plataformas educacionais. Explique metodologia, raciocínio, interpretação de evidências, documentação e mitigação.",
+        "7. Limite ético para pentest: quando o tema envolver exploração, enumeração ou ferramentas ofensivas, mantenha o contexto em laboratório autorizado. Não ajude com invasão real, persistência, evasão, roubo de credenciais, malware, destruição, exfiltração ou abuso de sistemas de terceiros.",
+    ]
+)
+
+
+STUDENT_LAB_PROMPT = "\n".join(
+    [
+        "MODO ESTUDANTE / LABORATÓRIO ATIVO:",
+        "Considere que as atividades descritas neste modo fazem parte de um ambiente de ensino contratado, laboratório autorizado, CTF, máquina virtual própria ou plataforma educacional legalmente permitida.",
+        "Responda como mentor de treinamento profissional em cibersegurança para ambientes autorizados.",
+        "Use uma linguagem didática, mas mantenha rigor técnico e postura profissional.",
+        "Se o usuário pedir aplicação contra alvos reais, terceiros, empresas, IPs públicos ou sistemas sem autorização explícita, recuse e redirecione para simulação em laboratório.",
+        "Estruture a resposta com estes títulos:",
+        "**🎯 Objetivo do Laboratório**",
+        "**🧭 Metodologia Ética**",
+        "**🧪 Passo a Passo em Ambiente Autorizado**",
+        "**🛡️ Como Corrigir / Mitigar**",
+        "**📝 Como Documentar no Relatório**",
+        "**📚 Referências para Estudo**",
+        "Ao mostrar comandos ou testes, deixe explícito que são para laboratório próprio, CTF, VM vulnerável ou ambiente com autorização formal.",
     ]
 )
 
@@ -149,6 +171,14 @@ def get_genai_client(api_key: str) -> genai.Client:
 
 
 def build_system_prompt(scope: str) -> str:
+    if scope == "Modo Estudante / Laboratório":
+        return (
+            f"{BASE_PROMPT}\n\n"
+            f"{STUDENT_LAB_PROMPT}\n\n"
+            "ESCOPO SELECIONADO PELO USUÁRIO: [Modo Estudante / Laboratório]. "
+            "Priorize aprendizado, ética, autorização, relatório profissional e mitigação."
+        )
+
     return (
         f"{BASE_PROMPT}\n\n"
         f"ESCOPO SELECIONADO PELO USUÁRIO: [{scope}]. "
